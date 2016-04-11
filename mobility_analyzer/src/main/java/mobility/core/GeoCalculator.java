@@ -97,14 +97,14 @@ public class GeoCalculator {
 		}
 	}
 	
-	public Double calculateRadiusOfGyration(List<Tweet> tweets, Point point){
+	public Double calculateRadiusOfGyration(List<Point> points, Point point){
 		Double sum = 0.0;
 		
-		for(Tweet t : tweets){
+		for(Point t : points){
 			Double base = calculateDistance(t.getLatitude(), t.getLongitude(), point.getLatitude(), point.getLongitude());
 			sum += Math.pow(base, 2);
 		}
-		sum = Math.sqrt((sum / tweets.size()));
+		sum = Math.sqrt((sum / points.size()));
 		return sum;
 		
 	}
