@@ -97,7 +97,7 @@ public class GeoCalculator {
 		}
 	}
 	
-	public Double calculateRadiusOfGyration(List<Point> points, Point point){
+	public Double calculateRadiusOfGyration(List<Point> points, Point point){ //in meters
 		Double sum = 0.0;
 		
 		for(Point t : points){
