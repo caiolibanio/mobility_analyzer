@@ -29,7 +29,7 @@ public class GeoCalculator {
 			p.setLatitude(p.getLatitude() * (Math.PI / 180));
 			p.setLongitude(p.getLongitude() * (Math.PI / 180));
 			totalWeight += p.getWeight();
-			System.out.println(p.getLatitude());
+			
 		}
 		
 		//Convert lat/long to cartesian (x,y,z) coordinates

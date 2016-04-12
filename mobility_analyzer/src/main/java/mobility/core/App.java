@@ -127,16 +127,10 @@ public class App {
 		}
 		
 		GeoCalculator calc = new GeoCalculator();
-		List<Point> points = new ArrayList<Point>();
 		User user = new User(tweets);
 		user.setUser_id(tweets.get(0).getUser_id());
 		
-		for(Tweet t : user.getTweetList()){
-			Point p = new Point(t.getLatitude(), t.getLongitude());
-			points.add(p);
-		}
-		
-		Double[] midPoint = calc.calculateMidPoint(points);
+		Double[] midPoint = calc.calculateMidPoint(user.tweetsAsPoints());
 		
 		Point midP = new Point(midPoint[0], midPoint[1]);
 		
@@ -157,7 +151,7 @@ public class App {
 		for(Tweet t : user.getTweetList()){
 			messages += "Text: " + t.getMessage() + "| coords: lat: "
 		+ t.getLatitude() + " long: " + t.getLongitude() + "| Displacement: "
-					+ t.getUserDisplacement() + "| Return prob: " + t.getReturnProb() + System.lineSeparator();
+					+ t.getUserDisplacement() + "| Return prob: " + t.getReturnProb() + "| Timestamp: " + t.getDate() + System.lineSeparator();
 		}
 		
 		System.out.println("USER ID: " + user.getUser_id() + System.lineSeparator() + 
