@@ -52,6 +52,10 @@ public class User {
 		this.user_id = user_id;
 	}
 	
+	public void addToTweetList(Tweet t){
+		tweetList.add(t);
+	}
+	
 	
 	
 	
