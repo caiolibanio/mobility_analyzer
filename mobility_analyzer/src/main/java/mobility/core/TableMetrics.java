@@ -56,29 +56,32 @@ public class TableMetrics {
 		int step2 = 1000;
 		List<Tweet> tweets = new ArrayList<Tweet>();
 		List<User> users = new ArrayList<User>();
+		int countUser = 0;
 
 		try {
 			connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:5432/tweets", "postgres", "admin");
 			connection.setAutoCommit(false);
 
-			users = getUserList(2);
+			users = getUserList(1000);
 
 			for (User u : users) {
 				st = connection.createStatement();
-				rs = st.executeQuery("select * from geo_tweets where user_id = " + u.getUser_id());
+				rs = st.executeQuery("select tid, longitude, latitude, date, user_id from geo_tweets where user_id = " + u.getUser_id());
+				countUser++;
+				System.out.println("Esta no usuario: " + countUser);
 
 				while (rs.next()) {
 					Long tid = rs.getLong("tid");
-					String json = rs.getString("json");
+//					String json = rs.getString("json");
 					Double lon = rs.getDouble("longitude");
 					Double lat = rs.getDouble("latitude");
 					Timestamp time = rs.getTimestamp("date");
-					Tweet tweet = new Tweet(tid, json);
+					Tweet tweet = new Tweet(tid, "");
 					tweet.setLongitude(lon);
 					tweet.setLatitude(lat);
 					tweet.setDate(time);
 					tweet.setUser_id(rs.getLong("user_id"));
-					tweet.setMessage(rs.getString("message"));
+					tweet.setMessage("");
 					u.addToTweetList(tweet);
 				}
 
@@ -104,11 +107,22 @@ public class TableMetrics {
 		for (User u : users) {
 			numMessages.add(u.getTweetList().size());
 		}
+		Collections.sort(numMessages);
+		
+		
+		
+		
+		System.out.println("Usuario com maior numero de mensagens: " + numMessages.get(numMessages.size() - 1));
+		System.out.println("Usuario com menor numero de mensagens: " + numMessages.get(0));
+		System.out.println("Usuario com mais de 20 mensagens: " + messageFilterSize(numMessages));
 		System.out.println("Mediana de mensagens por usuario: " + calcMedian(numMessages));
 		System.out.println("Media de mensagens por usuario: " + calcMedia(numMessages));
 		System.out.println("Media de mensagens por dia: " + calcMessagesPerDayMedia(users));
-		System.out.println("Media de mensagens por dia: " + calcMediaOfDisplacement(users));
-		System.out.println("Media de mensagens por dia: " + calcMedianOfDisplacement(users));
+		System.out.println("Mediana de mensagens por dia: " + calcMessagesPerDayMedian(users));
+		System.out.println("Media de deslocamento: " + calcMediaOfDisplacement(users));
+		System.out.println("Mediana de deslocamento: " + calcMedianOfDisplacement(users));
+		System.out.println("Media do raio de giro: " + calcRadiusMedia(users));
+		System.out.println("Mediana do raio de giro: " + calcRadiusMedian(users));
 
 		// GeoCalculator calc = new GeoCalculator();
 		// User user = new User(tweets);
@@ -125,6 +139,19 @@ public class TableMetrics {
 		//
 		// printVals(user, midP);
 
+	}
+
+	private static int messageFilterSize(List<Integer> numMessages) {
+		int index = 0;
+		
+		for(int i = 0; i < numMessages.size(); i++){
+			if(numMessages.get(i) >= 20){
+				index = i;
+				break;
+			}
+		}
+		return numMessages.size() - index;
+		
 	}
 
 	private static Double calcMediaOfDisplacement(List<User> users) {
@@ -147,6 +174,34 @@ public class TableMetrics {
 
 		return calcMediaDouble(listDisplacement);
 
+	}
+	
+	private static Double calcRadiusMedia(List<User> users){
+		GeoCalculator calc = new GeoCalculator();
+		Double generalRadius = 0.0;
+		
+		for(User u : users){
+			Double[] midPoint = calc.calculateMidPoint(u.tweetsAsPoints());
+			Point midP = new Point(midPoint[0], midPoint[1]);
+			generalRadius += calc.calculateRadiusOfGyration(u.tweetsAsPoints(), midP);
+		}
+		
+		return generalRadius / users.size();
+	}
+	
+	private static Double calcRadiusMedian(List<User> users){
+		GeoCalculator calc = new GeoCalculator();
+		List<Double> radList = new ArrayList<Double>();
+		
+		for(User u : users){
+			Double[] midPoint = calc.calculateMidPoint(u.tweetsAsPoints());
+			Point midP = new Point(midPoint[0], midPoint[1]);
+			radList.add(calc.calculateRadiusOfGyration(u.tweetsAsPoints(), midP));
+		}
+		
+		Collections.sort(radList);
+		return radList.get(radList.size() / 2);
+		
 	}
 
 	private static Double calcMedianOfDisplacement(List<User> users) {
@@ -199,6 +254,38 @@ public class TableMetrics {
 		}
 		int media = total / values.size();
 		return media;
+
+	}
+	
+	private static int calcMessagesPerDayMedian(List<User> users) {
+
+		List<Tweet> tList = new ArrayList<Tweet>();
+		Map<String, Integer> map = new HashMap<String, Integer>();
+		int total = 0;
+
+		for (User u : users) {
+			for (Tweet t : u.getTweetList()) {
+				tList.add(t);
+			}
+		}
+
+		for (Tweet t : tList) {
+			String dateString = getDateToString(t);
+			if (map.containsKey(dateString)) {
+				map.put(dateString, map.get(dateString) + 1);
+			} else {
+				map.put(dateString, 1);
+			}
+		}
+
+		Collection<Integer> values = map.values();
+		List<Integer> list = new ArrayList<Integer>();
+		for(Integer i : values){
+			list.add(i);
+		}
+		Collections.sort(list);
+		
+		return list.get(list.size() / 2);
 
 	}
 
