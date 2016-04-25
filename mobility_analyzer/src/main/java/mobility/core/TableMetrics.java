@@ -62,13 +62,13 @@ public class TableMetrics {
 			connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:5432/tweets", "postgres", "admin");
 			connection.setAutoCommit(false);
 
-			users = getUserList(1000);
+			users = getUserList(300);
 
 			for (User u : users) {
 				st = connection.createStatement();
 				rs = st.executeQuery("select tid, longitude, latitude, date, user_id from geo_tweets where user_id = " + u.getUser_id());
 				countUser++;
-				System.out.println("Esta no usuario: " + countUser);
+//				System.out.println("Esta no usuario: " + countUser);
 
 				while (rs.next()) {
 					Long tid = rs.getLong("tid");
@@ -111,7 +111,7 @@ public class TableMetrics {
 		
 		
 		
-		
+		System.out.println("--------------------TODOS OS USUARIOS-------------------------");
 		System.out.println("Usuario com maior numero de mensagens: " + numMessages.get(numMessages.size() - 1));
 		System.out.println("Usuario com menor numero de mensagens: " + numMessages.get(0));
 		System.out.println("Usuario com mais de 20 mensagens: " + messageFilterSize(numMessages));
@@ -123,6 +123,37 @@ public class TableMetrics {
 		System.out.println("Mediana de deslocamento: " + calcMedianOfDisplacement(users));
 		System.out.println("Media do raio de giro: " + calcRadiusMedia(users));
 		System.out.println("Mediana do raio de giro: " + calcRadiusMedian(users));
+		
+		List<Integer> selectedValues = new ArrayList<Integer>();
+		List<User> selectedUsers = new ArrayList<User>();
+		
+		for(User u : users){
+			if(u.getTweetList().size() >= 20){
+				selectedUsers.add(u);
+				selectedValues.add(u.getTweetList().size());
+			}
+		}
+		
+		Collections.sort(selectedValues);
+		
+		
+		System.out.println("Lista reduzida a usuarios com mais de 20 msgns: " + selectedUsers.size());
+		
+		
+		System.out.println("--------------USUARIOS COM MAIS DE 20 MSGNS----------------");
+		System.out.println("Usuario com maior numero de mensagens: " + selectedValues.get(selectedValues.size() - 1));
+		System.out.println("Usuario com menor numero de mensagens: " + selectedValues.get(0));
+		System.out.println("Usuario com mais de 20 mensagens: " + messageFilterSize(selectedValues));
+		System.out.println("Mediana de mensagens por usuario: " + calcMedian(selectedValues));
+		System.out.println("Media de mensagens por usuario: " + calcMedia(selectedValues));
+		System.out.println("Media de mensagens por dia: " + calcMessagesPerDayMedia(selectedUsers));
+		System.out.println("Mediana de mensagens por dia: " + calcMessagesPerDayMedian(selectedUsers));
+		System.out.println("Media de deslocamento: " + calcMediaOfDisplacement(selectedUsers));
+		System.out.println("Mediana de deslocamento: " + calcMedianOfDisplacement(selectedUsers));
+		System.out.println("Media do raio de giro: " + calcRadiusMedia(selectedUsers));
+		System.out.println("Mediana do raio de giro: " + calcRadiusMedian(selectedUsers));
+		
+		
 
 		// GeoCalculator calc = new GeoCalculator();
 		// User user = new User(tweets);
@@ -350,7 +381,7 @@ public class TableMetrics {
 				"admin");
 		connection.setAutoCommit(false);
 		st = connection.createStatement();
-		rs = st.executeQuery("select * from geo_tweets_users order by user_id limit " + n + " offset 200000");
+		rs = st.executeQuery("select * from geo_tweets_users order by user_id limit " + n + " offset 300000");
 
 		while (rs.next()) {
 			User u = new User(new ArrayList<Tweet>());
