@@ -8,12 +8,10 @@ public class User {
 	private List<Tweet> tweetList;
 	private Double radiusOfGyration;
 	private Long user_id;
-	private Double longitude_home;
-	private Double latitude_home;
+	private Point pointHome;
+	private Point pointCentroid;
 	private int num_messages;
 	private Double total_Displacement;
-	private Double longitude_centroid;
-	private Double latitude_centroid;
 	
 	
 	
@@ -64,26 +62,6 @@ public class User {
 	}
 
 
-	public Double getLongitude_home() {
-		return longitude_home;
-	}
-
-
-	public void setLongitude_home(Double longitude_home) {
-		this.longitude_home = longitude_home;
-	}
-
-
-	public Double getLatitude_home() {
-		return latitude_home;
-	}
-
-
-	public void setLatitude_home(Double latitude_home) {
-		this.latitude_home = latitude_home;
-	}
-
-
 	public int getNum_messages() {
 		return num_messages;
 	}
@@ -104,29 +82,25 @@ public class User {
 	}
 
 
-	public Double getLongitude_centroid() {
-		return longitude_centroid;
+	public Point getPointHome() {
+		return pointHome;
 	}
 
 
-	public void setLongitude_centroid(Double longitude_centroid) {
-		this.longitude_centroid = longitude_centroid;
+	public void setPointHome(Point pointHome) {
+		this.pointHome = pointHome;
 	}
 
 
-	public Double getLatitude_centroid() {
-		return latitude_centroid;
+	public Point getPointCentroid() {
+		return pointCentroid;
 	}
 
 
-	public void setLatitude_centroid(Double latitude_centroid) {
-		this.latitude_centroid = latitude_centroid;
+	public void setPointCentroid(Point pointCentroid) {
+		this.pointCentroid = pointCentroid;
 	}
 	
 	
 	
-	
-	
-	
-
 }
