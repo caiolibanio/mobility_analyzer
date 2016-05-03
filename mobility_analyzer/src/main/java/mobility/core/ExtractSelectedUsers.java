@@ -193,3 +193,22 @@ public class ExtractSelectedUsers {
 	}
 
 }
+
+//CREATE TABLE geo_tweets_users_selected
+//(
+//  user_id numeric NOT NULL,
+//  longitude_home numeric,
+//  latitude_home numeric,
+//  num_messages numeric,
+//  radius_of_gyration numeric,
+//  total_displacement numeric,
+//  longitude_centroid numeric,
+//  latitude_centroid numeric,
+//  CONSTRAINT tid_geo_tweets_users_selected_pk PRIMARY KEY (user_id)
+//)
+//WITH (
+//  OIDS=FALSE
+//);
+//ALTER TABLE geo_tweets_users_selected
+//  OWNER TO postgres;
+
