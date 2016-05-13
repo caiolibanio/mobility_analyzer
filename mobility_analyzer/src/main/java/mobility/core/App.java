@@ -148,10 +148,12 @@ public class App {
 
 	private static void printVals(User user, Point midP) {
 		String messages = "";
+		int count = 1;
 		for(Tweet t : user.getTweetList()){
-			messages += "Text: " + t.getMessage() + "| coords: lat: "
+			messages += count + " Text: " + t.getMessage() + "| coords: lat: "
 		+ t.getLatitude() + " long: " + t.getLongitude() + "| Displacement: "
 					+ t.getUserDisplacement() + "| Return prob: " + t.getReturnProb() + "| Timestamp: " + t.getDate() + System.lineSeparator();
+			count++;
 		}
 		
 		System.out.println("USER ID: " + user.getUser_id() + System.lineSeparator() + 
