@@ -241,7 +241,7 @@ public class ExtractSelectedUsers {
 	}
 
 	private static List<Cluster<DoublePoint>> clusteringPoints(List<DoublePoint> points) {
-		DBSCANClusterer dbscan = new DBSCANClusterer(45.0, 3, new GeoDistance());
+		DBSCANClusterer dbscan = new DBSCANClusterer(45.0, 4, new GeoDistance());
 		List<Cluster<DoublePoint>> cluster = dbscan.cluster(points);
 		return cluster;
 	}
