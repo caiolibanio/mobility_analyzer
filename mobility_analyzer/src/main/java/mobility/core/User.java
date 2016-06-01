@@ -11,7 +11,10 @@ public class User {
 	private Point pointHome;
 	private Point pointCentroid;
 	private int num_messages;
+	@Deprecated
 	private Double total_Displacement;
+	
+	private Displacement displacement;
 	
 	
 	
@@ -100,6 +103,17 @@ public class User {
 	public void setPointCentroid(Point pointCentroid) {
 		this.pointCentroid = pointCentroid;
 	}
+
+
+	public Displacement getDisplacement() {
+		return displacement;
+	}
+
+
+	public void setDisplacement(Displacement displacement) {
+		this.displacement = displacement;
+	}
+	
 	
 	
 	

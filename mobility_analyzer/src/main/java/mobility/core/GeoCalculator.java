@@ -106,7 +106,8 @@ public class GeoCalculator {
 		}
 		sum = Math.sqrt((sum / points.size()));
 		return sum;
-		
 	}
+	
+	
 	
 }

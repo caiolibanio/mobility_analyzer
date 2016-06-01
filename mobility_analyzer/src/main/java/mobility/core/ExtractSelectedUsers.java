@@ -313,7 +313,7 @@ public class ExtractSelectedUsers {
         return londonTime;
 	}
 
-	private static void generateDisplacements(List<User> users) {
+	private static void generateDistanceDisplacements(List<User> users) {
 		for(User u : users){
 			calc.generateDisplacement(u.getTweetList());
 			Double totalDispl = 0.0;
@@ -324,7 +324,39 @@ public class ExtractSelectedUsers {
 		}
 		
 	}
+	
+	private static void generateDisplacements(List<User> users) {
+		generateDistanceDisplacements(users);
+		calculateTotalDisplacement(users);
+		calculateDisplacementPerDay(users);
+		
+		
+	}
+	
+	private static void calculateTotalDisplacement(List<User> users) {
+		int displCount = 0;
+		for(User u : users){
+			List<Tweet> listTweets = u.getTweetList();
+			Collections.sort(listTweets);
+			for(int i = 1; i < listTweets.size(); i++){
+				Tweet tweet = listTweets.get(i);
+				Tweet predTweet = listTweets.get(i-1);
+				if(calc.calculateDistance(tweet.getLatitude(), tweet.getLongitude(),
+						predTweet.getLatitude(), predTweet.getLongitude()) > 45){
+					displCount++;
+				}
+			}
+			u.getDisplacement().setDisplacementCounter(displCount);
+			displCount = 0;
+		}
+		
+	}
 
+	private static void calculateDisplacementPerDay(List<User> users) {
+		// TODO Auto-generated method stub
+		
+	}
+	
 	private static void insert(List<User> users) throws SQLException {
 		
 		for(User u : users){
