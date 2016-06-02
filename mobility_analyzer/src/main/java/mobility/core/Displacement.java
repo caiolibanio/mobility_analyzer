@@ -10,6 +10,8 @@ public class Displacement {
 	
 	private int displacementPerDay;
 	
+	private List<Integer> listDisplacements;
+	
 	private List<Integer> lowDisplacement;
 	
 	private List<Integer> topDisplacement;
@@ -54,6 +56,14 @@ public class Displacement {
 
 	public void setTopDisplacement(List<Integer> topDisplacement) {
 		this.topDisplacement = topDisplacement;
+	}
+
+	public List<Integer> getListDisplacements() {
+		return listDisplacements;
+	}
+
+	public void setListDisplacements(List<Integer> listDisplacements) {
+		this.listDisplacements = listDisplacements;
 	}
 	
 	

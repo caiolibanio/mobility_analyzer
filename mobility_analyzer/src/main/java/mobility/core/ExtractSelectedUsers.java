@@ -262,13 +262,7 @@ public class ExtractSelectedUsers {
 	
 	private static boolean isHomeTime(Tweet tweet){
 		Timestamp time = tweet.getDate();
-		int year = time.getYear() + 1900;
-		int month = time.getMonth();
-		int date = time.getDate();
-		int hrs = time.getHours();
-		int mins = time.getMinutes();
-		
-		Calendar londonTime = getLondonTime(year, month, date, hrs, mins);
+		Calendar londonTime = getLondonTime(time);
 		
 		int yearLondon = londonTime.get(Calendar.YEAR);
 		int monthLondon = londonTime.get(Calendar.MONTH);
@@ -288,8 +282,14 @@ public class ExtractSelectedUsers {
 		
 	}
 	
-	private static Calendar getLondonTime(int year, int month, int date, int hrs, int mins){
+	private static Calendar getLondonTime(Timestamp time){
 		Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+		int year = time.getYear() + 1900;
+		int month = time.getMonth();
+		int date = time.getDate();
+		int hrs = time.getHours();
+		int mins = time.getMinutes();
+		
 		cal.set(Calendar.YEAR, year);
 		cal.set(Calendar.MONTH, month);
 		cal.set(Calendar.DAY_OF_MONTH, date);
@@ -330,32 +330,32 @@ public class ExtractSelectedUsers {
 		int displCount = 0;
 		for(User u : users){
 			List<Tweet> listTweets = u.getTweetList();
-			Collections.sort(listTweets);
-			for(int i = 1; i < listTweets.size(); i++){
-				Tweet tweet = listTweets.get(i);
-				Tweet predTweet = listTweets.get(i-1);
-				if(isDisplacement(tweet.getLatitude(), tweet.getLongitude(),
-						predTweet.getLatitude(), predTweet.getLongitude())){
-					displCount++;
-				}
-			}
+			displCount = calculateTotalDisplacementPerTweets(listTweets);
 			u.getDisplacement().setDisplacementCounter(displCount);
 			displCount = 0;
 		}
 		
 	}
 	
+	private static int calculateTotalDisplacementPerTweets(List<Tweet> listTweets){
+		int displCount = 0;
+		Collections.sort(listTweets);
+		for(int i = 1; i < listTweets.size(); i++){
+			Tweet tweet = listTweets.get(i);
+			Tweet predTweet = listTweets.get(i-1);
+			if(isDisplacement(tweet.getLatitude(), tweet.getLongitude(),
+					predTweet.getLatitude(), predTweet.getLongitude())){
+				displCount++;
+			}
+		}
+		return displCount;
+	}
+	
 	private static List<Tweet> getTweetsByDate(List<Tweet> tweetList, Calendar calendar){
 		List<Tweet> list = new ArrayList<Tweet>();
 		for(Tweet t : tweetList){
 			Timestamp time = t.getDate();
-			int year = time.getYear() + 1900;
-			int month = time.getMonth();
-			int date = time.getDate();
-			int hrs = time.getHours();
-			int mins = time.getMinutes();
-			
-			Calendar londonTime = getLondonTime(year, month, date, hrs, mins);
+			Calendar londonTime = getLondonTime(time);
 			if(londonTime.get(Calendar.YEAR) == calendar.get(Calendar.YEAR) && 
 					londonTime.get(Calendar.MONTH) == calendar.get(Calendar.MONTH) && 
 					londonTime.get(Calendar.DAY_OF_MONTH) == calendar.get(Calendar.DAY_OF_MONTH)){
@@ -373,12 +373,20 @@ public class ExtractSelectedUsers {
 	}
 
 	private static void calculateDisplacementPerDay(List<User> users) {
+		int displPerDay = 0;
+		List<Tweet> analyzedTweets = new ArrayList<Tweet>();
 		for(User u : users){
 			List<Tweet> listTweets = u.getTweetList();
 			Collections.sort(listTweets);
-			for(int i = 1; i < listTweets.size(); i++){
-				Tweet tweet = listTweets.get(i);
-				Tweet predTweet = listTweets.get(i-1);
+			for(Tweet t : listTweets){
+				Calendar calendar = getLondonTime(t.getDate());
+				List<Tweet> tweetsPerDate = getTweetsByDate(listTweets, calendar);
+				displPerDay = calculateTotalDisplacementPerTweets(tweetsPerDate);
+				
+				if(displPerDay > 0){
+					u.getDisplacement().getListDisplacements().add(displPerDay);
+				}
+				
 			}
 		}
 		
