@@ -261,7 +261,6 @@ public class ExtractSelectedUsers {
 	}
 	
 	private static boolean isHomeTime(Tweet tweet){
-		Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
 		Timestamp time = tweet.getDate();
 		int year = time.getYear() + 1900;
 		int month = time.getMonth();
@@ -269,25 +268,7 @@ public class ExtractSelectedUsers {
 		int hrs = time.getHours();
 		int mins = time.getMinutes();
 		
-
-		
-		cal.set(Calendar.YEAR, year);
-		cal.set(Calendar.MONTH, month);
-		cal.set(Calendar.DAY_OF_MONTH, date);
-		cal.set(Calendar.HOUR_OF_DAY, hrs);
-		cal.set(Calendar.MINUTE, mins);
-		
-//		cal.set(Calendar.YEAR, 2014);
-//		cal.set(Calendar.MONTH, 4);
-//		cal.set(Calendar.DAY_OF_MONTH, 26);
-//		cal.set(Calendar.HOUR_OF_DAY, 23);
-//		cal.set(Calendar.MINUTE, 59);
-		
-		
-
-		Calendar londonTime = convertTimeZones(cal, "Europe/London");
-		
-		
+		Calendar londonTime = getLondonTime(year, month, date, hrs, mins);
 		
 		int yearLondon = londonTime.get(Calendar.YEAR);
 		int monthLondon = londonTime.get(Calendar.MONTH);
@@ -304,6 +285,18 @@ public class ExtractSelectedUsers {
 			
 		}
 		return false;
+		
+	}
+	
+	private static Calendar getLondonTime(int year, int month, int date, int hrs, int mins){
+		Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+		cal.set(Calendar.YEAR, year);
+		cal.set(Calendar.MONTH, month);
+		cal.set(Calendar.DAY_OF_MONTH, date);
+		cal.set(Calendar.HOUR_OF_DAY, hrs);
+		cal.set(Calendar.MINUTE, mins);
+		Calendar londonTime = convertTimeZones(cal, "Europe/London");
+		return londonTime;
 		
 	}
 	
@@ -341,8 +334,8 @@ public class ExtractSelectedUsers {
 			for(int i = 1; i < listTweets.size(); i++){
 				Tweet tweet = listTweets.get(i);
 				Tweet predTweet = listTweets.get(i-1);
-				if(calc.calculateDistance(tweet.getLatitude(), tweet.getLongitude(),
-						predTweet.getLatitude(), predTweet.getLongitude()) > 45){
+				if(isDisplacement(tweet.getLatitude(), tweet.getLongitude(),
+						predTweet.getLatitude(), predTweet.getLongitude())){
 					displCount++;
 				}
 			}
@@ -351,9 +344,43 @@ public class ExtractSelectedUsers {
 		}
 		
 	}
+	
+	private static List<Tweet> getTweetsByDate(List<Tweet> tweetList, Calendar calendar){
+		List<Tweet> list = new ArrayList<Tweet>();
+		for(Tweet t : tweetList){
+			Timestamp time = t.getDate();
+			int year = time.getYear() + 1900;
+			int month = time.getMonth();
+			int date = time.getDate();
+			int hrs = time.getHours();
+			int mins = time.getMinutes();
+			
+			Calendar londonTime = getLondonTime(year, month, date, hrs, mins);
+			if(londonTime.get(Calendar.YEAR) == calendar.get(Calendar.YEAR) && 
+					londonTime.get(Calendar.MONTH) == calendar.get(Calendar.MONTH) && 
+					londonTime.get(Calendar.DAY_OF_MONTH) == calendar.get(Calendar.DAY_OF_MONTH)){
+				list.add(t);
+			}
+		}
+		return list;
+	}
+	
+	private static boolean isDisplacement(Double lat1, Double lon1, Double lat2, Double lon2){
+		if(calc.calculateDistance(lat1, lon1, lat2, lon2) > 45){
+			return true;
+		}
+		return false;
+	}
 
 	private static void calculateDisplacementPerDay(List<User> users) {
-		// TODO Auto-generated method stub
+		for(User u : users){
+			List<Tweet> listTweets = u.getTweetList();
+			Collections.sort(listTweets);
+			for(int i = 1; i < listTweets.size(); i++){
+				Tweet tweet = listTweets.get(i);
+				Tweet predTweet = listTweets.get(i-1);
+			}
+		}
 		
 	}
 	
