@@ -322,10 +322,30 @@ public class ExtractSelectedUsers {
 		generateDistanceDisplacements(users);
 		calculateTotalDisplacement(users);
 		calculateDisplacementPerDay(users);
+		calculateDistancePerDisplacement(users);
 		
 		
 	}
 	
+	private static void calculateDistancePerDisplacement(List<User> users) {
+		Double displCount = 0.0;
+		for (User u : users) {
+			List<Tweet> listTweets = u.getTweetList();
+			Collections.sort(listTweets);
+			for (int i = 1; i < listTweets.size(); i++) {
+				Tweet tweet = listTweets.get(i);
+				Tweet predTweet = listTweets.get(i - 1);
+				if (isDisplacement(tweet.getLatitude(), tweet.getLongitude(), predTweet.getLatitude(),
+						predTweet.getLongitude())) {
+					Double distanceDisplacement = calc.calculateDistance(tweet.getLatitude(), tweet.getLongitude(),
+							predTweet.getLatitude(), predTweet.getLongitude());
+					u.getDisplacement().getListDistanceDisplacements().add(distanceDisplacement);
+				}
+			}
+		}
+
+	}
+
 	private static void calculateTotalDisplacement(List<User> users) {
 		int displCount = 0;
 		for(User u : users){
@@ -378,15 +398,17 @@ public class ExtractSelectedUsers {
 		for(User u : users){
 			List<Tweet> listTweets = u.getTweetList();
 			Collections.sort(listTweets);
+			analyzedTweets.clear();
 			for(Tweet t : listTweets){
-				Calendar calendar = getLondonTime(t.getDate());
-				List<Tweet> tweetsPerDate = getTweetsByDate(listTweets, calendar);
-				displPerDay = calculateTotalDisplacementPerTweets(tweetsPerDate);
-				
-				if(displPerDay > 0){
-					u.getDisplacement().getListDisplacements().add(displPerDay);
+				if(! analyzedTweets.contains(t)){
+					Calendar calendar = getLondonTime(t.getDate());
+					List<Tweet> tweetsPerDate = getTweetsByDate(listTweets, calendar);
+					analyzedTweets.addAll(tweetsPerDate);
+					displPerDay = calculateTotalDisplacementPerTweets(tweetsPerDate);
+					if(displPerDay > 0){
+						u.getDisplacement().getListDisplacementsPerDay().add(displPerDay);
+					}
 				}
-				
 			}
 		}
 		

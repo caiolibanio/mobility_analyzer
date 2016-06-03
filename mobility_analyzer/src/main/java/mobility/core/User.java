@@ -21,6 +21,7 @@ public class User {
 	public User(List<Tweet> tweetList) {
 		super();
 		this.tweetList = tweetList;
+		this.displacement = new Displacement();
 	}
 
 
