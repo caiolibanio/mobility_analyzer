@@ -57,14 +57,7 @@ public class DisplacementPerDay implements Comparable<DisplacementPerDay>{
 
 	@Override
 	public int compareTo(DisplacementPerDay arg0) {
-		if(this.getDisplacementPerDay() < arg0.getDisplacementPerDay()){
-			return -1;
-		}else{
-			if(this.getDisplacementPerDay() == arg0.getDisplacementPerDay()){
-				return 0;
-			}
-		}
-		return 1;
+		return this.getDisplacementPerDay() - arg0.getDisplacementPerDay();
 	}
 	
 	

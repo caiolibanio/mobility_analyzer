@@ -63,14 +63,7 @@ public class DistanceDisplacement implements Comparable<DistanceDisplacement>{
 
 	@Override
 	public int compareTo(DistanceDisplacement o) {
-		if(this.getDistanceDisplacement() < o.getDistanceDisplacement()){
-			return -1;
-		}else{
-			if(this.getDistanceDisplacement() == o.getDistanceDisplacement()){
-				return 0;
-			}
-		}
-		return 1;
+		return this.getDistanceDisplacement().compareTo(o.getDistanceDisplacement());
 	}
 	
 	
