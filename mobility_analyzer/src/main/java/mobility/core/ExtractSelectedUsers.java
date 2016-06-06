@@ -23,35 +23,26 @@ import org.apache.commons.math3.ml.clustering.Cluster;
 import org.apache.commons.math3.ml.clustering.DBSCANClusterer;
 import org.apache.commons.math3.ml.clustering.DoublePoint;
 
+import mobility.DAO.UserDAO;
 import mobility.dbscan.GeoDistance;
+import mobility.service.TweetService;
+import mobility.service.UserService;
 
 public class ExtractSelectedUsers {
-	
-	private static Connection connection = null;
+
 	
 	private static GeoCalculator calc = new GeoCalculator();
+	
+	private static UserService userService = new UserService();
+	
+	private static TweetService tweetService = new TweetService();
 
 	public static void main(String[] args) {
 
-		System.out.println("-------- PostgreSQL " + "JDBC Connection Testing ------------");
-
-		try {
-
-			Class.forName("org.postgresql.Driver");
-
-		} catch (ClassNotFoundException e) {
-
-			System.out.println("Where is your PostgreSQL JDBC Driver? " + "Include in your library path!");
-			e.printStackTrace();
-			return;
-
-		}
-
-		System.out.println("PostgreSQL JDBC Driver Registered!");
+		System.out.println("Final user selection is in process...");
 
 		try {
 			calculating();
-			connection.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 			System.err.println("Erro fatal!");
@@ -74,39 +65,10 @@ public class ExtractSelectedUsers {
 
 		try {
 			users = getUserList();
-			
-//			connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:5432/tweets", "postgres", "admin");
-//			connection.setAutoCommit(false);
 
 			for (User u : users) {
-				
-				if(connection == null || connection.isClosed()){
-					connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:5432/tweets", "postgres", "admin");
-					connection.setAutoCommit(false);
-				}
-				st = connection.createStatement();
-				rs = st.executeQuery("select tid, longitude, latitude, date, user_id from geo_tweets where user_id = " + u.getUser_id());
-				
-
-				while (rs.next()) {
-					Long tid = rs.getLong("tid");
-//					String json = rs.getString("json");
-					Double lon = rs.getDouble("longitude");
-					Double lat = rs.getDouble("latitude");
-					Timestamp time = rs.getTimestamp("date");
-					Tweet tweet = new Tweet(tid, "");
-					tweet.setLongitude(lon);
-					tweet.setLatitude(lat);
-					tweet.setDate(time);
-					tweet.setUser_id(rs.getLong("user_id"));
-					tweet.setMessage("");
-					u.addToTweetList(tweet);
-				}
-				
+				u.getTweetList().addAll(tweetService.findTweetsByUser(u.getUser_id()));
 				usersToInsert.add(u);
-				rs.close();
-				st.close();
-				
 				
 				if(usersToInsert.size() == 1000){
 					countUserProcessed += 1000;
@@ -115,8 +77,6 @@ public class ExtractSelectedUsers {
 					analyseUsers(usersToInsert);
 					insert(usersToInsert);
 					usersToInsert.clear();
-					connection.commit();
-					connection.close();
 					
 				}
 				
@@ -125,20 +85,12 @@ public class ExtractSelectedUsers {
 				analyseUsers(usersToInsert);
 				insert(usersToInsert);
 				usersToInsert.clear();
-				connection.commit();
-				connection.close();
 			}
 			
 
 		} catch (SQLException se) {
 			System.err.println("Erro Fatal no processo!");
 			System.err.println(se.getMessage());
-		} finally {
-			rs.close();
-			st.close();
-//			connection.commit();
-			connection.close();
-
 		}
 
 		Date date = new Date();
@@ -174,16 +126,8 @@ public class ExtractSelectedUsers {
 	private static void findUserCentroid(List<User> users) throws SQLException {
 		
 		for(User u : users){
-			Statement stmt = connection.createStatement();
-			ResultSet rs = stmt.executeQuery("select * from calculate_centroid" + "(" + u.getUser_id() + ")");
-			if(rs.next()){
-				String point = rs.getString("st_astext");
-				point = point.replace("POINT(", "");
-				point = point.replace(")", "");
-				String[] coords = point.split(" ");
-				Point centroid = new Point(Double.parseDouble(coords[1]), Double.parseDouble(coords[0]));
-				u.setPointCentroid(centroid);
-			}
+			Point centroid = userService.findUserCentroid(u.getUser_id());
+			u.setPointCentroid(centroid);
 		}
 	}
 
@@ -306,27 +250,38 @@ public class ExtractSelectedUsers {
         return londonTime;
 	}
 
-	private static void generateDistanceDisplacements(List<User> users) {
+	private static void generateDistanceMovement(List<User> users) {
 		for(User u : users){
 			calc.generateDisplacement(u.getTweetList());
 			Double totalDispl = 0.0;
 			for(Tweet t : u.getTweetList()){
 				totalDispl += t.getUserDisplacement();
 			}
-			u.setTotal_Displacement(totalDispl);
+			u.setUser_movement(totalDispl);
 		}
 		
 	}
 	
 	private static void generateDisplacements(List<User> users) {
-		generateDistanceDisplacements(users);
+		generateDistanceMovement(users);
 		calculateTotalDisplacement(users);
 		calculateDisplacementPerDay(users);
 		calculateDistancePerDisplacement(users);
-		
-		
+		calculateDisplacementAttrb(users);
 	}
 	
+	private static void calculateDisplacementAttrb(List<User> users) {
+		for(User u : users){
+			u.getDisplacement().generateLowDisplacementPerDay(5);
+			u.getDisplacement().generateTopDisplacementPerDay(5);
+			u.getDisplacement().generateLowDistanceDisplacement(5);
+			u.getDisplacement().generateTopDistanceDisplacement(5);
+			u.getDisplacement().calculateDisplacementPerDayMedian();
+			u.getDisplacement().calculateDistanceDisplacementMedian();
+		}
+		
+	}
+
 	private static void calculateDistancePerDisplacement(List<User> users) {
 		Double displCount = 0.0;
 		for (User u : users) {
@@ -339,11 +294,13 @@ public class ExtractSelectedUsers {
 						predTweet.getLongitude())) {
 					Double distanceDisplacement = calc.calculateDistance(tweet.getLatitude(), tweet.getLongitude(),
 							predTweet.getLatitude(), predTweet.getLongitude());
-					u.getDisplacement().getListDistanceDisplacements().add(distanceDisplacement);
+					Point pointA = new Point(tweet.getLatitude(), tweet.getLongitude());
+					Point pointB = new Point(predTweet.getLatitude(), predTweet.getLongitude());
+					DistanceDisplacement distDisplacement = new DistanceDisplacement(pointA, pointB, distanceDisplacement);
+					u.getDisplacement().getListDistanceDisplacements().add(distDisplacement);
 				}
 			}
 		}
-
 	}
 
 	private static void calculateTotalDisplacement(List<User> users) {
@@ -406,7 +363,8 @@ public class ExtractSelectedUsers {
 					analyzedTweets.addAll(tweetsPerDate);
 					displPerDay = calculateTotalDisplacementPerTweets(tweetsPerDate);
 					if(displPerDay > 0){
-						u.getDisplacement().getListDisplacementsPerDay().add(displPerDay);
+						DisplacementPerDay displacement = new DisplacementPerDay(displPerDay, t.getDate(), null);
+						u.getDisplacement().getListDisplacementsPerDay().add(displacement);
 					}
 				}
 			}
@@ -415,22 +373,7 @@ public class ExtractSelectedUsers {
 	}
 	
 	private static void insert(List<User> users) throws SQLException {
-		
-		for(User u : users){
-			Statement stmt = connection.createStatement();
-			String sql = "INSERT INTO geo_tweets_users_selected" + "(" +  "user_id" + ", " + "longitude_home" + ", " + "latitude_home" + 
-			", " +"num_messages" + ", " + "radius_of_gyration" + ", " + "total_displacement" + ", " + "longitude_centroid" + " ," +
-					"latitude_centroid" + ") " + "VALUES (" + "'" + u.getUser_id() + "'" + ", " + "'" + u.getPointHome().getLongitude() + "'" + ", " + 
-			"'" + u.getPointHome().getLatitude() + "'" + " ," + "'" + u.getNum_messages() + "'" + " ," + "'" + u.getRadiusOfGyration() + "'" + ", " + 
-			"'" + u.getTotal_Displacement() + "'" + " ," + "'" + u.getPointCentroid().getLongitude() + "'" + " ," + 
-			"'" + u.getPointCentroid().getLatitude() + "'" + ");";
-
-			stmt.executeUpdate(sql);
-			stmt.close();
-		}
-		
-		
-		
+		userService.saveUsers(users);
 	}
 
 	private static void filteringMessagesByDisplacement(List<User> users) {
@@ -462,31 +405,7 @@ public class ExtractSelectedUsers {
 	}
 
 	private static List<User> getUserList() throws SQLException {
-		Statement st = null;
-		ResultSet rs = null;
-		List<User> listUsers = new ArrayList<User>();
-		Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:5432/tweets", "postgres",
-				"admin");
-		connection.setAutoCommit(false);
-		st = connection.createStatement();
-		rs = st.executeQuery("select * from geo_tweets_users order by user_id");
-
-		while (rs.next()) {
-			User u = new User(new ArrayList<Tweet>());
-			u.setUser_id(rs.getLong("user_id"));
-			listUsers.add(u);
-		}
-		st.close();
-		rs.close();
-		connection.close();
-		
-		
-//		List<User> listUsers = new ArrayList<User>();
-//		User u = new User(new ArrayList<Tweet>());
-//		u.setUser_id(new Long(161059155));
-//		listUsers.add(u);
-		
-		return listUsers;
+		return userService.findAllUsersGeoTweet();
 
 	}
 

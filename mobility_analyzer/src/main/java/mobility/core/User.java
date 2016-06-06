@@ -11,8 +11,8 @@ public class User {
 	private Point pointHome;
 	private Point pointCentroid;
 	private int num_messages;
-	@Deprecated
-	private Double total_Displacement;
+	private Double user_movement;
+	private Long displacementId;
 	
 	private Displacement displacement;
 	
@@ -23,6 +23,16 @@ public class User {
 		this.tweetList = tweetList;
 		this.displacement = new Displacement();
 	}
+
+	public Long getDisplacementId() {
+		return displacementId;
+	}
+
+	public void setDisplacementId(Long displacementId) {
+		this.displacementId = displacementId;
+	}
+
+
 
 
 	public List<Tweet> getTweetList() {
@@ -75,14 +85,13 @@ public class User {
 		this.num_messages = num_messages;
 	}
 
-
-	public Double getTotal_Displacement() {
-		return total_Displacement;
+	public Double getUser_movement() {
+		return user_movement;
 	}
 
 
-	public void setTotal_Displacement(Double total_Displacement) {
-		this.total_Displacement = total_Displacement;
+	public void setUser_movement(Double user_movement) {
+		this.user_movement = user_movement;
 	}
 
 

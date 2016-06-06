@@ -6,34 +6,28 @@ import java.util.List;
 
 public class Displacement {
 	
-	private Double total_Displacement = 0.0;
+	private Long id;
 	
 	private int displacementCounter = 0;
 	
-	private int displacementPerDay = 0;
-	
-	private List<Integer> listDisplacementsPerDay = new ArrayList<Integer>();
+	private List<DisplacementPerDay> listDisplacementsPerDay = new ArrayList<DisplacementPerDay>();
 	
 	private List<Integer> lowDisplacementPerDay = new ArrayList<Integer>();
 	
 	private List<Integer> topDisplacementPerDay = new ArrayList<Integer>();
 	
-	private List<Double> listDistanceDisplacements = new ArrayList<Double>();
+	private List<DistanceDisplacement> listDistanceDisplacements = new ArrayList<DistanceDisplacement>();
 	
 	private List<Double> lowDistanceDisplacement = new ArrayList<Double>();
 	
 	private List<Double> topDistanceDisplacement = new ArrayList<Double>();
 	
+	private Double displacementPerDayMedian = 0.0;
+	
+	private Double distanceDisplacementMedian = 0.0;
+	
 	public Displacement(){
 		
-	}
-
-	public Double getTotal_Displacement() {
-		return total_Displacement;
-	}
-
-	public void setTotal_Displacement(Double total_Displacement) {
-		this.total_Displacement = total_Displacement;
 	}
 
 	public int getDisplacementCounter() {
@@ -44,43 +38,19 @@ public class Displacement {
 		this.displacementCounter = displacementCounter;
 	}
 
-	public int getDisplacementPerDay() {
-		return displacementPerDay;
+	public Long getId() {
+		return id;
 	}
 
-	public void setDisplacementPerDay(int displacementPerDay) {
-		this.displacementPerDay = displacementPerDay;
+	public void setId(Long id) {
+		this.id = id;
 	}
 
-	public List<Integer> getListDisplacementsPerDay() {
-		return listDisplacementsPerDay;
-	}
-
-	public void setListDisplacementsPerDay(List<Integer> listDisplacementsPerDay) {
-		this.listDisplacementsPerDay = listDisplacementsPerDay;
-	}
-
-	public List<Integer> getLowDisplacementPerDay() {
-		return lowDisplacementPerDay;
-	}
-
-	public void setLowDisplacementPerDay(List<Integer> lowDisplacementPerDay) {
-		this.lowDisplacementPerDay = lowDisplacementPerDay;
-	}
-
-	public List<Integer> getTopDisplacementPerDay() {
-		return topDisplacementPerDay;
-	}
-
-	public void setTopDisplacementPerDay(List<Integer> topDisplacementPerDay) {
-		this.topDisplacementPerDay = topDisplacementPerDay;
-	}
-
-	public List<Double> getListDistanceDisplacements() {
+	public List<DistanceDisplacement> getListDistanceDisplacements() {
 		return listDistanceDisplacements;
 	}
 
-	public void setListDistanceDisplacements(List<Double> listDistanceDisplacements) {
+	public void setListDistanceDisplacements(List<DistanceDisplacement> listDistanceDisplacements) {
 		this.listDistanceDisplacements = listDistanceDisplacements;
 	}
 
@@ -100,12 +70,53 @@ public class Displacement {
 		this.topDistanceDisplacement = topDistanceDisplacement;
 	}
 
+	public Double getDisplacementPerDayMedian() {
+		return displacementPerDayMedian;
+	}
+
+	public void setDisplacementPerDayMedian(Double displacementPerDayMedian) {
+		this.displacementPerDayMedian = displacementPerDayMedian;
+	}
+
+	public Double getDistanceDisplacementMedian() {
+		return distanceDisplacementMedian;
+	}
+
+	public void setDistanceDisplacementMedian(Double distanceDisplacementMedian) {
+		this.distanceDisplacementMedian = distanceDisplacementMedian;
+	}
+
+	public List<DisplacementPerDay> getListDisplacementsPerDay() {
+		return listDisplacementsPerDay;
+	}
+
+	public void setListDisplacementsPerDay(List<DisplacementPerDay> listDisplacementsPerDay) {
+		this.listDisplacementsPerDay = listDisplacementsPerDay;
+	}
+
+	public List<Integer> getLowDisplacementPerDay() {
+		return lowDisplacementPerDay;
+	}
+
+	public void setLowDisplacementPerDay(List<Integer> lowDisplacementPerDay) {
+		this.lowDisplacementPerDay = lowDisplacementPerDay;
+	}
+
+	public List<Integer> getTopDisplacementPerDay() {
+		return topDisplacementPerDay;
+	}
+
+	public void setTopDisplacementPerDay(List<Integer> topDisplacementPerDay) {
+		this.topDisplacementPerDay = topDisplacementPerDay;
+	}
+
 	public void generateLowDisplacementPerDay(int percentage){
 		int value = Math.round((float)(getListDisplacementsPerDay().size() * (percentage / 100.0))) ;
 		Collections.sort(getListDisplacementsPerDay());
 		if(getListDisplacementsPerDay().size() >= value){
 			for(int i = 0; i < value; i++){
-				getLowDisplacementPerDay().add(getListDisplacementsPerDay().get(i));
+				getLowDisplacementPerDay().add(
+						getListDisplacementsPerDay().get(i).getDisplacementPerDay());
 			}
 		}
 	}
@@ -114,9 +125,10 @@ public class Displacement {
 		int value = Math.round((float)(getListDisplacementsPerDay().size() * (percentage / 100.0))) ;
 		Collections.sort(getListDisplacementsPerDay());
 		if(getListDisplacementsPerDay().size() >= value){
-			for(int i = value; i >= 0; i--){
-				getTopDisplacementPerDay().add(getListDisplacementsPerDay().
-						get(getListDisplacementsPerDay().size() - i));
+			for(int i = value; i > 0; i--){
+				getTopDisplacementPerDay().add(
+						getListDisplacementsPerDay().get(
+								getListDisplacementsPerDay().size() - i).getDisplacementPerDay());
 			}
 		}
 	}
@@ -126,7 +138,7 @@ public class Displacement {
 		Collections.sort(getListDistanceDisplacements());
 		if(getListDistanceDisplacements().size() >= value){
 			for(int i = 0; i < value; i++){
-				getLowDistanceDisplacement().add(getListDistanceDisplacements().get(i));
+				getLowDistanceDisplacement().add(getListDistanceDisplacements().get(i).getDistanceDisplacement());
 			}
 		}
 	}
@@ -135,10 +147,32 @@ public class Displacement {
 		int value = Math.round((float)(getListDistanceDisplacements().size() * (percentage / 100.0))) ;
 		Collections.sort(getListDistanceDisplacements());
 		if(getListDistanceDisplacements().size() >= value){
-			for(int i = value; i >= 0; i--){
+			for(int i = value; i > 0; i--){
 				getTopDistanceDisplacement().add(getListDistanceDisplacements().
-						get(getListDistanceDisplacements().size() - i));
+						get(getListDistanceDisplacements().size() - i).getDistanceDisplacement());
 			}
+		}
+	}
+	
+	public void calculateDisplacementPerDayMedian(){
+		Double sum = 0.0;
+		if(!getListDisplacementsPerDay().isEmpty()){
+			for(DisplacementPerDay val : getListDisplacementsPerDay()){
+				sum += val.getDisplacementPerDay();
+			}
+			Double median = (sum / getListDisplacementsPerDay().size());
+			setDisplacementPerDayMedian(median);
+		}
+	}
+	
+	public void calculateDistanceDisplacementMedian(){
+		Double sum = 0.0;
+		if(!getListDistanceDisplacements().isEmpty()){
+			for(DistanceDisplacement val : getListDistanceDisplacements()){
+				sum += val.getDistanceDisplacement();
+			}
+			Double median = (sum / getListDistanceDisplacements().size());
+			setDistanceDisplacementMedian(median);
 		}
 	}
 	

@@ -8,6 +8,7 @@ public class Point {
 	private Double X;
 	private Double Y;
 	private Double Z;
+	private Long id;
 	
 	public Point(Double latitude, Double longitude) {
 		super();
@@ -51,6 +52,14 @@ public class Point {
 	public void setZ(Double z) {
 		Z = z;
 	}
+	public Long getId() {
+		return id;
+	}
+	public void setId(Long id) {
+		this.id = id;
+	}
+	
+	
 	
 	
 	
