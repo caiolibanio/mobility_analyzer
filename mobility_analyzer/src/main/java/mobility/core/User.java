@@ -32,9 +32,6 @@ public class User {
 		this.displacementId = displacementId;
 	}
 
-
-
-
 	public List<Tweet> getTweetList() {
 		return tweetList;
 	}

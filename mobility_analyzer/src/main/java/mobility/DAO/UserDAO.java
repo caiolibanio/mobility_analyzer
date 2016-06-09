@@ -15,20 +15,18 @@ public class UserDAO implements IDAO<User> {
 	public void save(User entidade) {
 		Connection conn = Conexao.open();
 		PreparedStatement pstm = null;
-		String sql = "INSERT INTO geo_tweets_users_selected (user_id, longitude_home, latitude_home,"
-				+ " num_messages, radius_of_gyration, total_displacement, longitude_centroid, latitude_centroid, displacement_id "
-				+ ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		String sql = "INSERT INTO geo_tweets_users_selected (user_id, home_point_id,"
+				+ " num_messages, radius_of_gyration, total_displacement, centroid_point_id, displacement_id "
+				+ ") VALUES (?, ?, ?, ?, ?, ?, ?)";
 		try {
 			pstm = conn.prepareStatement(sql);
 			pstm.setLong(1, entidade.getUser_id());
-			pstm.setDouble(2, entidade.getPointHome().getLongitude());
-			pstm.setDouble(3, entidade.getPointHome().getLatitude());
-			pstm.setLong(4, entidade.getNum_messages());
-			pstm.setDouble(5, entidade.getRadiusOfGyration());
-			pstm.setDouble(6, entidade.getUser_movement());
-			pstm.setDouble(7, entidade.getPointCentroid().getLongitude());
-			pstm.setDouble(8, entidade.getPointCentroid().getLatitude());
-			pstm.setLong(9, entidade.getDisplacementId());
+			pstm.setDouble(2, entidade.getPointHome().getId());
+			pstm.setLong(3, entidade.getNum_messages());
+			pstm.setDouble(4, entidade.getRadiusOfGyration());
+			pstm.setDouble(5, entidade.getUser_movement());
+			pstm.setDouble(6, entidade.getPointCentroid().getId());
+			pstm.setLong(7, entidade.getDisplacementId());
 			pstm.executeUpdate();
 		} catch (SQLException e) {
 			if (conn != null) {
@@ -50,23 +48,21 @@ public class UserDAO implements IDAO<User> {
 	public void saveUsers(List<User> users){
 		Connection conn = Conexao.open();
 		PreparedStatement pstm = null;
-		String sql = "INSERT INTO geo_tweets_users_selected (user_id, longitude_home, latitude_home,"
-				+ " num_messages, radius_of_gyration, total_displacement, longitude_centroid, latitude_centroid, displacement_id "
-				+ ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		String sql = "INSERT INTO geo_tweets_users_selected (user_id, home_point_id,"
+				+ " num_messages, radius_of_gyration, total_displacement, centroid_point_id, displacement_id "
+				+ ") VALUES (?, ?, ?, ?, ?, ?, ?)";
 		try {
 			conn.setAutoCommit(false);
 			pstm = conn.prepareStatement(sql);
 			
 			for(User entidade : users){
 				pstm.setLong(1, entidade.getUser_id());
-				pstm.setDouble(2, entidade.getPointHome().getLongitude());
-				pstm.setDouble(3, entidade.getPointHome().getLatitude());
-				pstm.setLong(4, entidade.getNum_messages());
-				pstm.setDouble(5, entidade.getRadiusOfGyration());
-				pstm.setDouble(6, entidade.getUser_movement());
-				pstm.setDouble(7, entidade.getPointCentroid().getLongitude());
-				pstm.setDouble(8, entidade.getPointCentroid().getLatitude());
-				pstm.setLong(9, entidade.getDisplacementId());
+				pstm.setDouble(2, entidade.getPointHome().getId());
+				pstm.setLong(3, entidade.getNum_messages());
+				pstm.setDouble(4, entidade.getRadiusOfGyration());
+				pstm.setDouble(5, entidade.getUser_movement());
+				pstm.setDouble(6, entidade.getPointCentroid().getId());
+				pstm.setLong(7, entidade.getDisplacementId());
 				pstm.executeUpdate();
 			}
 			conn.commit();
@@ -88,22 +84,20 @@ public class UserDAO implements IDAO<User> {
 	
 	public void saveUsers(List<User> users, Connection conn) throws SQLException {
 		PreparedStatement pstm = null;
-		String sql = "INSERT INTO geo_tweets_users_selected (user_id, longitude_home, latitude_home,"
-				+ " num_messages, radius_of_gyration, total_displacement, longitude_centroid, latitude_centroid, displacement_id "
-				+ ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		String sql = "INSERT INTO geo_tweets_users_selected (user_id, home_point_id,"
+				+ " num_messages, radius_of_gyration, total_displacement, centroid_point_id, displacement_id "
+				+ ") VALUES (?, ?, ?, ?, ?, ?, ?)";
 
 		pstm = conn.prepareStatement(sql);
 
 		for (User entidade : users) {
 			pstm.setLong(1, entidade.getUser_id());
-			pstm.setDouble(2, entidade.getPointHome().getLongitude());
-			pstm.setDouble(3, entidade.getPointHome().getLatitude());
-			pstm.setLong(4, entidade.getNum_messages());
-			pstm.setDouble(5, entidade.getRadiusOfGyration());
-			pstm.setDouble(6, entidade.getUser_movement());
-			pstm.setDouble(7, entidade.getPointCentroid().getLongitude());
-			pstm.setDouble(8, entidade.getPointCentroid().getLatitude());
-			pstm.setLong(9, entidade.getDisplacementId());
+			pstm.setDouble(2, entidade.getPointHome().getId());
+			pstm.setLong(3, entidade.getNum_messages());
+			pstm.setDouble(4, entidade.getRadiusOfGyration());
+			pstm.setDouble(5, entidade.getUser_movement());
+			pstm.setDouble(6, entidade.getPointCentroid().getId());
+			pstm.setLong(7, entidade.getDisplacementId());
 			pstm.executeUpdate();
 		}
 		Conexao.close(null, pstm, null);
@@ -126,7 +120,8 @@ public class UserDAO implements IDAO<User> {
 		Connection conn = Conexao.open();
         PreparedStatement pstm = null;
         ResultSet rs = null;
-        String sql = "select * from geo_tweets_users order by user_id";
+//        String sql = "select * from geo_tweets_users order by user_id";
+        String sql = "select * from auxiliar order by user_id";
         List<User> userList = new ArrayList<User>();
         User user = null;
         try {

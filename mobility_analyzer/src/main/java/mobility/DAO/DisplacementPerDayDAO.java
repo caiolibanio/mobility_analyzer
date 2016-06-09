@@ -15,7 +15,7 @@ public class DisplacementPerDayDAO implements IDAO<DisplacementPerDay> {
 	public void save(DisplacementPerDay entidade) {
 		Connection conn = Conexao.open();
         PreparedStatement pstm = null;
-        String sql = "INSERT INTO displacement_per_day (displacement_id, displacementperday, date) "
+        String sql = "INSERT INTO displacement_per_day (displacement_id, displacement_per_day, date) "
         		+ "VALUES (?, ?, ?)";
         try {
             pstm = conn.prepareStatement(sql);
@@ -43,7 +43,7 @@ public class DisplacementPerDayDAO implements IDAO<DisplacementPerDay> {
 	
 	public void save(List<DisplacementPerDay> displList, Connection conn) throws SQLException {
 		PreparedStatement pstm = null;
-		String sql = "INSERT INTO displacement_per_day (displacement_id, displacementperday, date) "
+		String sql = "INSERT INTO displacement_per_day (displacement_id, displacement_per_day, date) "
 				+ "VALUES (?, ?, ?)";
 		pstm = conn.prepareStatement(sql);
 		for(DisplacementPerDay entidade : displList){

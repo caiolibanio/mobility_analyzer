@@ -39,7 +39,7 @@ public class UserService {
 				Long idDisplacement = displacementDAO.save(user.getDisplacement(), conn);
 				setDisplacementIdOnEntities(idDisplacement, user);
 				displacementPerDayDAO.save(user.getDisplacement().getListDisplacementsPerDay(), conn);
-				insertPointsOfDistanceDisplacement(user.getDisplacement().getListDistanceDisplacements(), conn);
+				insertPoints(user, conn);
 				distanceDisplacementDAO.save(user.getDisplacement().getListDistanceDisplacements(), conn);
 			}
 			userDAO.saveUsers(users, conn);
@@ -60,14 +60,17 @@ public class UserService {
         }
 	}
 	
-	private void insertPointsOfDistanceDisplacement(List<DistanceDisplacement> listDistanceDisplacements, Connection conn) throws SQLException {
-		for(DistanceDisplacement d : listDistanceDisplacements){
+	private void insertPoints(User user, Connection conn) throws SQLException {
+		for(DistanceDisplacement d :user.getDisplacement().getListDistanceDisplacements()){
 			Long idPA = pointDAO.save(d.getPointA(), conn);
 			d.getPointA().setId(idPA);
 			Long idPB = pointDAO.save(d.getPointB(), conn);
 			d.getPointB().setId(idPB);
 		}
-		
+		Long idHome = pointDAO.save(user.getPointHome(), conn);
+		Long idCentroid = pointDAO.save(user.getPointCentroid(), conn);
+		user.getPointHome().setId(idHome);
+		user.getPointCentroid().setId(idCentroid);
 		
 	}
 

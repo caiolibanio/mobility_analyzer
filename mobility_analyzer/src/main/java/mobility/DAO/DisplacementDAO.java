@@ -13,7 +13,7 @@ public class DisplacementDAO implements IDAO<Displacement> {
 	public void save(Displacement entidade) {
 		Connection conn = Conexao.open();
         PreparedStatement pstm = null;
-        String sql = "INSERT INTO displacement (displacementcounter, displacementperdaymedian, distancedisplacementmedian) "
+        String sql = "INSERT INTO displacement (displacement_counter, displacement_per_day_median, distance_displacement_median) "
         		+ "VALUES (?, ?, ?)";
         try {
             pstm = conn.prepareStatement(sql);
@@ -42,7 +42,7 @@ public class DisplacementDAO implements IDAO<Displacement> {
 	public Long save(Displacement entidade, Connection conn) throws SQLException {
 		PreparedStatement pstm = null;
 		Long generatedId = null;
-		String sql = "INSERT INTO displacement (displacementcounter, displacementperdaymedian, distancedisplacementmedian) "
+		String sql = "INSERT INTO displacement (displacement_counter, displacement_per_day_median, distance_displacement_median) "
 				+ "VALUES (?, ?, ?)";
 
 		pstm = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
