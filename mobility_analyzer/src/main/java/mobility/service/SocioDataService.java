@@ -3,6 +3,7 @@ package mobility.service;
 import java.util.List;
 
 import mobility.DAO.SocialDataDAO;
+import mobility.core.Point;
 import mobility.core.SocioData;
 
 public class SocioDataService {
@@ -15,6 +16,10 @@ public class SocioDataService {
 	
 	public List<SocioData> findAll(){
 		return socioDAO.findAll();
+	}
+	
+	public String findPolygonCodeOfPoint(Point point){
+		return socioDAO.findPolygonCodeOfPoint(point);
 	}
 
 }

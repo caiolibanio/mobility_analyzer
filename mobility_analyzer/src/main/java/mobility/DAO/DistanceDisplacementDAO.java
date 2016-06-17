@@ -2,14 +2,21 @@ package mobility.DAO;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
 import mobility.connection.Conexao;
+import mobility.core.Displacement;
 import mobility.core.DisplacementPerDay;
 import mobility.core.DistanceDisplacement;
+import mobility.util.Util;
 
 public class DistanceDisplacementDAO implements IDAO<DistanceDisplacement> {
+	
+	private DisplacementDAO displacementDAO = new DisplacementDAO();
+	
+//	private PointDAO pointDAO = new PointDAO();
 
 	@Override
 	public void save(DistanceDisplacement entidade) {
@@ -20,7 +27,7 @@ public class DistanceDisplacementDAO implements IDAO<DistanceDisplacement> {
         try {
             pstm = conn.prepareStatement(sql);
             pstm.setDouble(1, entidade.getDistanceDisplacement());
-            pstm.setLong(2, entidade.getDisplacement_id());
+            pstm.setLong(2, entidade.getDisplacement().getId());
             pstm.setLong(3, entidade.getPointA().getId());
             pstm.setLong(4, entidade.getPointB().getId());
             pstm.executeUpdate();
@@ -49,7 +56,7 @@ public class DistanceDisplacementDAO implements IDAO<DistanceDisplacement> {
 		pstm = conn.prepareStatement(sql);
 		for(DistanceDisplacement entidade : displList){
 			pstm.setDouble(1, entidade.getDistanceDisplacement());
-			pstm.setLong(2, entidade.getDisplacement_id());
+			pstm.setLong(2, entidade.getDisplacement().getId());
 			pstm.setLong(3, entidade.getPointA().getId());
 			pstm.setLong(4, entidade.getPointB().getId());
 			pstm.executeUpdate();
@@ -68,6 +75,36 @@ public class DistanceDisplacementDAO implements IDAO<DistanceDisplacement> {
 	public List<DistanceDisplacement> findAll() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	public DistanceDisplacement findById(Long id){
+		Connection conn = Conexao.open();
+		PreparedStatement pstm = null;
+		ResultSet rs = null;
+		DistanceDisplacement displacement = null;
+		String sql = "SELECT id, distance_displacement, displacement_id, geom_a_point AS point_a,"
+				+ " geom_b_point AS point_b FROM distance_displacement WHERE id = ?";
+		try {
+			pstm = conn.prepareStatement(sql);
+			pstm.setLong(1, id);
+			rs = pstm.executeQuery();
+			
+			if(rs.next()){
+				displacement = new DistanceDisplacement();
+				displacement.setDisplacement(displacementDAO.findById(rs.getLong("displacement_id")));
+				displacement.setDistanceDisplacement(rs.getDouble("distance_displacement"));
+				displacement.setId(rs.getLong("id"));
+				displacement.setPointA(Util.textToPoint(rs.getString("point_a")));
+				displacement.setPointB(Util.textToPoint(rs.getString("point_b")));
+				
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally {
+            Conexao.close(conn, pstm, rs);
+        }
+		return displacement;
 	}
 	
 

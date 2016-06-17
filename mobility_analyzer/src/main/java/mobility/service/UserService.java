@@ -76,12 +76,11 @@ public class UserService {
 
 	private void setDisplacementIdOnEntities(Long idDisplacement, User user) {
 		user.getDisplacement().setId(idDisplacement);
-		user.setDisplacementId(idDisplacement);
 		for(DisplacementPerDay d : user.getDisplacement().getListDisplacementsPerDay()){
-			d.setDisplacement_id(idDisplacement);
+			d.setDisplacement(user.getDisplacement());
 		}
 		for(DistanceDisplacement d : user.getDisplacement().getListDistanceDisplacements()){
-			d.setDisplacement_id(idDisplacement);
+			d.setDisplacement(user.getDisplacement());
 		}
 		
 	}
@@ -93,5 +92,14 @@ public class UserService {
 	public Point findUserCentroid(Long userId){
 		return userDAO.findUserCentroid(userId);
 	}
+	
+	public User findUserById(Long userId){
+		return userDAO.findUserById(userId);
+	}
+	
+	public List<User> findAllSelectedUsers(){
+		return userDAO.findAllSelectedUsers();
+	}
+	
 
 }

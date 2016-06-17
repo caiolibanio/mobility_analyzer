@@ -12,8 +12,6 @@ public class User {
 	private Point pointCentroid;
 	private int num_messages;
 	private Double user_movement;
-	private Long displacementId;
-	
 	private Displacement displacement;
 	
 	
@@ -22,14 +20,6 @@ public class User {
 		super();
 		this.tweetList = tweetList;
 		this.displacement = new Displacement();
-	}
-
-	public Long getDisplacementId() {
-		return displacementId;
-	}
-
-	public void setDisplacementId(Long displacementId) {
-		this.displacementId = displacementId;
 	}
 
 	public List<Tweet> getTweetList() {

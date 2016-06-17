@@ -296,7 +296,10 @@ public class ExtractSelectedUsers {
 							predTweet.getLatitude(), predTweet.getLongitude());
 					Point pointA = new Point(tweet.getLatitude(), tweet.getLongitude());
 					Point pointB = new Point(predTweet.getLatitude(), predTweet.getLongitude());
-					DistanceDisplacement distDisplacement = new DistanceDisplacement(pointA, pointB, distanceDisplacement);
+					DistanceDisplacement distDisplacement = new DistanceDisplacement();
+					distDisplacement.setPointA(pointA);
+					distDisplacement.setPointB(pointB);
+					distDisplacement.setDistanceDisplacement(distanceDisplacement);
 					u.getDisplacement().getListDistanceDisplacements().add(distDisplacement);
 				}
 			}
@@ -363,7 +366,9 @@ public class ExtractSelectedUsers {
 					analyzedTweets.addAll(tweetsPerDate);
 					displPerDay = calculateTotalDisplacementPerTweets(tweetsPerDate);
 					if(displPerDay > 0){
-						DisplacementPerDay displacement = new DisplacementPerDay(displPerDay, t.getDate(), null);
+						DisplacementPerDay displacement = new DisplacementPerDay();
+						displacement.setDisplacementPerDay(displPerDay);
+						displacement.setDate(t.getDate());
 						u.getDisplacement().getListDisplacementsPerDay().add(displacement);
 					}
 				}

@@ -128,5 +128,28 @@ public class SocialDataDAO implements IDAO<SocioData> {
         return listData;
 		
 	}
+	
+	public String findPolygonCodeOfPoint(Point point) {
+		Connection conn = Conexao.open();
+		PreparedStatement pstm = null;
+		ResultSet rs = null;
+		String code = null;
+		String pointPostgres = "'" + "POINT(" + point.getLongitude() + " " + point.getLatitude() + ")" + "'";
+		String sql = "SELECT code FROM social_data WHERE st_contains(geom, ST_GeomFromText(" + pointPostgres + ", 4326)) = TRUE";
+		try {
+			pstm = conn.prepareStatement(sql);
+			rs = pstm.executeQuery();
+			
+			if(rs.next()){
+				code = rs.getString("code");
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally {
+            Conexao.close(conn, pstm, rs);
+        }
+		return code;
+	}
 
 }

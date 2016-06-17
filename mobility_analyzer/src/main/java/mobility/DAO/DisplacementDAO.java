@@ -72,5 +72,33 @@ public class DisplacementDAO implements IDAO<Displacement> {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	public Displacement findById(Long id){
+		Connection conn = Conexao.open();
+		PreparedStatement pstm = null;
+		ResultSet rs = null;
+		Displacement displacement = null;
+		String sql = "select * from displacement where id = ?";
+		try {
+			pstm = conn.prepareStatement(sql);
+			pstm.setLong(1, id);
+			rs = pstm.executeQuery();
+			
+			if(rs.next()){
+				displacement = new Displacement();
+				displacement.setId(rs.getLong("id"));
+				displacement.setDisplacementCounter(rs.getInt("displacement_counter"));
+				displacement.setDisplacementPerDayMedian(rs.getDouble("displacement_per_day_median"));
+				displacement.setDistanceDisplacementMedian(rs.getDouble("distance_displacement_median"));
+				displacement.setDistanceDisplacementMedian(rs.getDouble("distance_displacement_median"));
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally {
+            Conexao.close(conn, pstm, rs);
+        }
+		return displacement;
+	}
 
 }

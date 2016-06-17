@@ -10,13 +10,9 @@ public class DistanceDisplacement implements Comparable<DistanceDisplacement>{
 	
 	private Double distanceDisplacement;
 	
-	private Long displacement_id;
+	private Displacement displacement;
 
-	public DistanceDisplacement(Point pointA, Point pointB, Double distanceDisplacement) {
-		super();
-		this.pointA = pointA;
-		this.pointB = pointB;
-		this.distanceDisplacement = distanceDisplacement;
+	public DistanceDisplacement() {
 	}
 
 	public Point getPointA() {
@@ -50,15 +46,13 @@ public class DistanceDisplacement implements Comparable<DistanceDisplacement>{
 	public void setId(Long id) {
 		this.id = id;
 	}
-	
-	
 
-	public Long getDisplacement_id() {
-		return displacement_id;
+	public Displacement getDisplacement() {
+		return displacement;
 	}
 
-	public void setDisplacement_id(Long displacement_id) {
-		this.displacement_id = displacement_id;
+	public void setDisplacement(Displacement displacement) {
+		this.displacement = displacement;
 	}
 
 	@Override

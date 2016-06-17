@@ -12,13 +12,10 @@ public class DisplacementPerDay implements Comparable<DisplacementPerDay>{
 	
 	private Timestamp date;
 	
-	private Long displacement_id;
+	private Displacement displacement;
 
-	public DisplacementPerDay(int displacementPerDay, Timestamp date, Long displacement_id) {
-		super();
-		this.displacementPerDay = displacementPerDay;
-		this.date = date;
-		this.displacement_id = displacement_id;
+	public DisplacementPerDay() {
+
 	}
 
 	public Long getId() {
@@ -44,15 +41,13 @@ public class DisplacementPerDay implements Comparable<DisplacementPerDay>{
 	public void setDate(Timestamp date) {
 		this.date = date;
 	}
-	
-	
 
-	public Long getDisplacement_id() {
-		return displacement_id;
+	public Displacement getDisplacement() {
+		return displacement;
 	}
 
-	public void setDisplacement_id(Long displacement_id) {
-		this.displacement_id = displacement_id;
+	public void setDisplacement(Displacement displacement) {
+		this.displacement = displacement;
 	}
 
 	@Override

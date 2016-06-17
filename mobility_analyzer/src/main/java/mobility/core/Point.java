@@ -16,6 +16,9 @@ public class Point {
 		this.latitude = latitude;
 		this.weight  = weight;
 	}
+	
+	public Point(){}
+	
 	public Double getLongitude() {
 		return longitude;
 	}

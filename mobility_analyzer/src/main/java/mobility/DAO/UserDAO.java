@@ -8,8 +8,17 @@ import mobility.connection.Conexao;
 import mobility.core.Point;
 import mobility.core.Tweet;
 import mobility.core.User;
+import mobility.util.Util;
 
 public class UserDAO implements IDAO<User> {
+	
+	private DisplacementDAO displacementDAO = new DisplacementDAO();
+	
+//	private PointDAO pointDAO = new PointDAO();
+	
+	private TweetDAO tweetDAO = new TweetDAO();
+	
+	
 
 	@Override
 	public void save(User entidade) {
@@ -26,7 +35,7 @@ public class UserDAO implements IDAO<User> {
 			pstm.setDouble(4, entidade.getRadiusOfGyration());
 			pstm.setDouble(5, entidade.getUser_movement());
 			pstm.setDouble(6, entidade.getPointCentroid().getId());
-			pstm.setLong(7, entidade.getDisplacementId());
+			pstm.setLong(7, entidade.getDisplacement().getId());
 			pstm.executeUpdate();
 		} catch (SQLException e) {
 			if (conn != null) {
@@ -62,7 +71,7 @@ public class UserDAO implements IDAO<User> {
 				pstm.setDouble(4, entidade.getRadiusOfGyration());
 				pstm.setDouble(5, entidade.getUser_movement());
 				pstm.setDouble(6, entidade.getPointCentroid().getId());
-				pstm.setLong(7, entidade.getDisplacementId());
+				pstm.setLong(7, entidade.getDisplacement().getId());
 				pstm.executeUpdate();
 			}
 			conn.commit();
@@ -97,7 +106,7 @@ public class UserDAO implements IDAO<User> {
 			pstm.setDouble(4, entidade.getRadiusOfGyration());
 			pstm.setDouble(5, entidade.getUser_movement());
 			pstm.setDouble(6, entidade.getPointCentroid().getId());
-			pstm.setLong(7, entidade.getDisplacementId());
+			pstm.setLong(7, entidade.getDisplacement().getId());
 			pstm.executeUpdate();
 		}
 		Conexao.close(null, pstm, null);
@@ -120,8 +129,8 @@ public class UserDAO implements IDAO<User> {
 		Connection conn = Conexao.open();
         PreparedStatement pstm = null;
         ResultSet rs = null;
-//        String sql = "select * from geo_tweets_users order by user_id";
-        String sql = "select * from auxiliar order by user_id";
+        String sql = "select * from geo_tweets_users order by user_id";
+//        String sql = "select * from auxiliar order by user_id";
         List<User> userList = new ArrayList<User>();
         User user = null;
         try {
@@ -131,6 +140,42 @@ public class UserDAO implements IDAO<User> {
             	user = new User(new ArrayList<Tweet>());
             	user.setUser_id(rs.getLong("user_id"));
             	userList.add(user);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            Conexao.close(conn, pstm, rs);
+        }
+        return userList;
+	}
+	
+	public List<User> findAllSelectedUsers() {
+		Connection conn = Conexao.open();
+        PreparedStatement pstm = null;
+        ResultSet rs = null;
+        String sql = "SELECT user_id, num_messages, radius_of_gyration, total_displacement, displacement_id,"
+        		+ " ST_AsText(geom_home_point) AS home, ST_AsText(geom_centroid_point) AS centroid FROM geo_tweets_users_selected"
+        		+ " ORDER BY user_id limit 1000";
+//        String sql = "select * from auxiliar order by user_id";
+        List<User> userList = new ArrayList<User>();
+        User user = null;
+        try {
+            pstm = conn.prepareStatement(sql);
+            rs = pstm.executeQuery();
+
+            while (rs.next()) {
+            	user = new User(new ArrayList<Tweet>());
+				user.setUser_id(rs.getLong("user_id"));
+//				user.setDisplacement(displacementDAO.findById(rs.getLong("displacement_id")));
+				user.setNum_messages(rs.getInt("num_messages"));
+				user.setPointCentroid(Util.textToPoint(rs.getString("centroid")));
+				user.setPointHome(Util.textToPoint(rs.getString("home")));
+				user.setRadiusOfGyration(rs.getDouble("radius_of_gyration"));
+//				user.setTweetList(tweetDAO.findTweetsByUser(user.getUser_id()));
+				user.setUser_movement(rs.getDouble("total_displacement"));
+            	userList.add(user);
+            	
+            	
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -153,10 +198,7 @@ public class UserDAO implements IDAO<User> {
 			
 			if(rs.next()){
 				String point = rs.getString("st_astext");
-				point = point.replace("POINT(", "");
-				point = point.replace(")", "");
-				String[] coords = point.split(" ");
-				centroid = new Point(Double.parseDouble(coords[1]), Double.parseDouble(coords[0]));
+				centroid = Util.textToPoint(point);
 			}
 			
 		} catch (SQLException e) {
@@ -166,6 +208,41 @@ public class UserDAO implements IDAO<User> {
             Conexao.close(conn, pstm, rs);
         }
 		return centroid;
+		
+	}
+
+	public User findUserById(Long userId) {
+		Connection conn = Conexao.open();
+		PreparedStatement pstm = null;
+		ResultSet rs = null;
+		User user = null;
+		String sql = "SELECT user_id, num_messages, radius_of_gyration, total_displacement, displacement_id,"
+        		+ " geom_home_point AS home, geom_centroid_point AS centroid FROM geo_tweets_users_selected"
+        		+ " WHERE user_id = ?";
+		try {
+			pstm = conn.prepareStatement(sql);
+			pstm.setLong(1, userId);
+			rs = pstm.executeQuery();
+			
+			if(rs.next()){
+				user = new User(new ArrayList<Tweet>());
+				user.setUser_id(rs.getLong("user_id"));
+				user.setDisplacement(displacementDAO.findById(rs.getLong("displacement_id")));
+				user.setNum_messages(rs.getInt("num_messages"));
+				user.setPointCentroid(Util.textToPoint(rs.getString("centroid")));
+				user.setPointHome(Util.textToPoint(rs.getString("home")));
+				user.setRadiusOfGyration(rs.getDouble("radius_of_gyration"));
+				user.setTweetList(tweetDAO.findTweetsByUser(user.getUser_id()));
+				user.setUser_movement(rs.getDouble("total_displacement"));
+			}
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally {
+            Conexao.close(conn, pstm, rs);
+        }
+		return user;
 		
 	}
 

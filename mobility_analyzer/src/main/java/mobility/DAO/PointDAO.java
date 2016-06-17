@@ -5,9 +5,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import mobility.connection.Conexao;
+import mobility.core.DisplacementPerDay;
 import mobility.core.DistanceDisplacement;
 import mobility.core.Point;
 
@@ -68,8 +71,84 @@ public class PointDAO implements IDAO<Point> {
 
 	@Override
 	public List<Point> findAll() {
-		// TODO Auto-generated method stub
-		return null;
+		Connection conn = Conexao.open();
+		PreparedStatement pstm = null;
+		ResultSet rs = null;
+		Point point = null;
+		String sql = "select * from point";
+		List<Point> pointList = new ArrayList<Point>();
+		try {
+			pstm = conn.prepareStatement(sql);
+			rs = pstm.executeQuery();
+			
+			while(rs.next()){
+				point = new Point();
+				point.setId(rs.getLong("id"));
+				point.setLatitude(rs.getDouble("latitude"));
+				point.setLongitude(rs.getDouble("longitude"));
+				pointList.add(point);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally {
+            Conexao.close(conn, pstm, rs);
+        }
+		return pointList;
+	}
+	
+	public HashMap<Long, Point> findAllMap() {
+		Connection conn = Conexao.open();
+		PreparedStatement pstm = null;
+		ResultSet rs = null;
+		Point point = null;
+		String sql = "select * from point";
+		HashMap<Long, Point> pointMap = new HashMap<Long, Point>();
+		try {
+			pstm = conn.prepareStatement(sql);
+			rs = pstm.executeQuery();
+			int count = 0;
+			while(rs.next()){
+				point = new Point();
+				point.setId(rs.getLong("id"));
+				point.setLatitude(rs.getDouble("latitude"));
+				point.setLongitude(rs.getDouble("longitude"));
+				pointMap.put(point.getId(), point);
+				System.out.println(++count);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally {
+            Conexao.close(conn, pstm, rs);
+        }
+		return pointMap;
+	}
+	
+	public Point findById(Long id){
+		Connection conn = Conexao.open();
+		PreparedStatement pstm = null;
+		ResultSet rs = null;
+		Point point = null;
+		String sql = "select * from point where id = ?";
+		try {
+			pstm = conn.prepareStatement(sql);
+			pstm.setLong(1, id);
+			rs = pstm.executeQuery();
+			
+			if(rs.next()){
+				point = new Point();
+				point.setId(rs.getLong("id"));
+				point.setLatitude(rs.getDouble("latitude"));
+				point.setLongitude(rs.getDouble("longitude"));
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally {
+            Conexao.close(conn, pstm, rs);
+        }
+		return point;
 	}
 
 }
