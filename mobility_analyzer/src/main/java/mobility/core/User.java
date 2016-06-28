@@ -13,6 +13,8 @@ public class User {
 	private int num_messages;
 	private Double user_movement;
 	private Displacement displacement;
+	private String homePolygonCode;
+	private String centroidPolygonCode;
 	
 	
 	
@@ -110,6 +112,23 @@ public class User {
 	public void setDisplacement(Displacement displacement) {
 		this.displacement = displacement;
 	}
+
+	public String getHomePolygonCode() {
+		return homePolygonCode;
+	}
+
+	public void setHomePolygonCode(String homePolygonCode) {
+		this.homePolygonCode = homePolygonCode;
+	}
+
+	public String getCentroidPolygonCode() {
+		return centroidPolygonCode;
+	}
+
+	public void setCentroidPolygonCode(String centroidPolygonCode) {
+		this.centroidPolygonCode = centroidPolygonCode;
+	}
+	
 	
 	
 	

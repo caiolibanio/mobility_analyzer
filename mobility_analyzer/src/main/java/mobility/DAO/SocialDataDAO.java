@@ -3,6 +3,7 @@ package mobility.DAO;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -129,6 +130,83 @@ public class SocialDataDAO implements IDAO<SocioData> {
 		
 	}
 	
+	public ArrayList<ArrayList<String>> findAllMatrix() {
+		Connection conn = Conexao.open();
+        PreparedStatement pstm = null;
+        ResultSet rs = null;
+        ArrayList<ArrayList<String>> matrix = null;
+        String sql = "SELECT * FROM social_data";
+        
+        
+        
+        try {
+            pstm = conn.prepareStatement(sql);
+            rs = pstm.executeQuery();
+            
+            matrix = initMatrix(rs);
+            fillMatrix(matrix, rs);
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            Conexao.close(conn, pstm, rs);
+        }
+        return matrix;
+		
+	}
+	
+	private void fillMatrix(ArrayList<ArrayList<String>> matrix, ResultSet rs) throws SQLException {
+		ResultSetMetaData metaData = rs.getMetaData();
+		int rowsCount = 1;
+		int columnCounter = metaData.getColumnCount();
+		ArrayList<String> row = null;
+		while (rs.next()) {
+			row = new ArrayList<String>();
+			for(int i = 1; i <= columnCounter; i++){
+				row.add(rs.getObject(i).toString());
+			}
+			matrix.add(row);
+			
+		}
+		
+	}
+	
+	public int countTableSize(){
+		Connection conn = Conexao.open();
+        PreparedStatement pstm = null;
+        ResultSet rs = null;
+        int countRows = 0;
+        String sql = "SELECT COUNT(*) FROM social_data";
+        
+        try {
+            pstm = conn.prepareStatement(sql);
+            rs = pstm.executeQuery();
+            
+            if(rs.next()){
+            	countRows = rs.getInt(1);
+            }
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            Conexao.close(conn, pstm, rs);
+        }
+        return countRows;
+	}
+
+	private ArrayList<ArrayList<String>> initMatrix(ResultSet rs) throws SQLException {
+		ArrayList<ArrayList<String>> matrix = new ArrayList<ArrayList<String>>();
+		ArrayList<String> listColumnNames = new ArrayList<String>();
+		ResultSetMetaData metaData = rs.getMetaData();
+		int columnCounter = metaData.getColumnCount();
+		for(int i = 1 ; i <= columnCounter; i++){
+			listColumnNames.add(metaData.getColumnLabel(i));
+		}
+		matrix.add(listColumnNames);
+		return matrix;
+		
+	}
+
 	public String findPolygonCodeOfPoint(Point point) {
 		Connection conn = Conexao.open();
 		PreparedStatement pstm = null;

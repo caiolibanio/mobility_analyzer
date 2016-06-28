@@ -1,5 +1,6 @@
 package mobility.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import mobility.DAO.SocialDataDAO;
@@ -20,6 +21,10 @@ public class SocioDataService {
 	
 	public String findPolygonCodeOfPoint(Point point){
 		return socioDAO.findPolygonCodeOfPoint(point);
+	}
+	
+	public ArrayList<ArrayList<String>> findAllMatrix(){
+		return socioDAO.findAllMatrix();
 	}
 
 }

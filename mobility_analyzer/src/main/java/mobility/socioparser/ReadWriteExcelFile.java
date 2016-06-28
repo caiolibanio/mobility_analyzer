@@ -4,7 +4,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
@@ -58,7 +60,7 @@ public class ReadWriteExcelFile {
 	
 	public static void writeXLSFile() throws IOException {
 		
-		String excelFileName = "C:/Test.xls";//name of excel file
+		String excelFileName = "Test.xls";//name of excel file
 
 		String sheetName = "Sheet1";//name of sheet
 
@@ -156,15 +158,46 @@ public class ReadWriteExcelFile {
 		fileOut.flush();
 		fileOut.close();
 	}
-
-	public static void main(String[] args) throws IOException {
+	
+public static void writeXLSFileTableCorrelations(ArrayList<ArrayList<String>> matrixCells) throws IOException {
 		
-//		writeXLSFile();
-		readXLSFile();
-		
-//		writeXLSXFile();
-//		readXLSXFile();
+		String excelFileName = "Test.xls";//name of excel file
 
+		String sheetName = "Sheet1";//name of sheet
+
+		HSSFWorkbook wb = new HSSFWorkbook();
+		HSSFSheet sheet = wb.createSheet(sheetName) ;
+
+		//iterating r number of rows
+		for (int r=0;r < matrixCells.size(); r++ )
+		{
+			HSSFRow row = sheet.createRow(r);
+	
+			//iterating c number of columns
+			for (int c=0;c < matrixCells.size(); c++ )
+			{
+				HSSFCell cell = row.createCell(c);
+				
+				cell.setCellValue(matrixCells.get(r).get(c));
+			}
+		}
+		
+		FileOutputStream fileOut = new FileOutputStream(excelFileName);
+		
+		//write this workbook to an Outputstream.
+		wb.write(fileOut);
+		fileOut.flush();
+		fileOut.close();
 	}
+
+//	public static void main(String[] args) throws IOException {
+//		
+//		writeXLSFile();
+//		readXLSFile();
+//		
+////		writeXLSXFile();
+////		readXLSXFile();
+//
+//	}
 
 }

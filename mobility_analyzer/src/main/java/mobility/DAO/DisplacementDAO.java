@@ -1,5 +1,6 @@
 package mobility.DAO;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.sql.*;
 
@@ -69,8 +70,32 @@ public class DisplacementDAO implements IDAO<Displacement> {
 
 	@Override
 	public List<Displacement> findAll() {
-		// TODO Auto-generated method stub
-		return null;
+		Connection conn = Conexao.open();
+		PreparedStatement pstm = null;
+		ResultSet rs = null;
+		Displacement displacement = null;
+		List<Displacement> listDisplacement = new ArrayList<Displacement>();
+		String sql = "select * from displacement";
+		try {
+			pstm = conn.prepareStatement(sql);
+			rs = pstm.executeQuery();
+			
+			while(rs.next()){
+				displacement = new Displacement();
+				displacement.setId(rs.getLong("id"));
+				displacement.setDisplacementCounter(rs.getInt("displacement_counter"));
+				displacement.setDisplacementPerDayMedian(rs.getDouble("displacement_per_day_median"));
+				displacement.setDistanceDisplacementMedian(rs.getDouble("distance_displacement_median"));
+				displacement.setDistanceDisplacementMedian(rs.getDouble("distance_displacement_median"));
+				listDisplacement.add(displacement);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally {
+            Conexao.close(conn, pstm, rs);
+        }
+		return listDisplacement;
 	}
 	
 	public Displacement findById(Long id){
