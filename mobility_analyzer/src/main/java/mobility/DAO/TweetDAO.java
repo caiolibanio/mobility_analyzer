@@ -32,7 +32,7 @@ public class TweetDAO implements IDAO<Tweet> {
 		Connection conn = Conexao.open();
         PreparedStatement pstm = null;
         ResultSet rs = null;
-        String sql = "select tid, longitude, latitude, date, user_id from geo_tweets where user_id = ?";
+        String sql = "SELECT tid, longitude, latitude, date, user_id FROM geo_tweets WHERE user_id = ?";
 
         List<Tweet> tweetList = new ArrayList<Tweet>();
 

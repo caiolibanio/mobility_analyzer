@@ -194,7 +194,7 @@ public class ExtractSelectedUsers {
 
 	    List<DoublePoint> points = new ArrayList<DoublePoint>();
 	    for (Tweet t : user.getTweetList()) {
-	    	if(isHomeTime(t)){
+	    	if(DateTimeOperations.isHomeTime(t)){
 	    		double[] d = new double[2];
 		    	d[0] = t.getLatitude();
 	            d[1] = t.getLongitude();
@@ -204,51 +204,7 @@ public class ExtractSelectedUsers {
 	    return points;
 	}
 	
-	private static boolean isHomeTime(Tweet tweet){
-		Timestamp time = tweet.getDate();
-		Calendar londonTime = getLondonTime(time);
-		
-		int yearLondon = londonTime.get(Calendar.YEAR);
-		int monthLondon = londonTime.get(Calendar.MONTH);
-		int dayLondon = londonTime.get(Calendar.DAY_OF_MONTH);
-		int dayWeekLondon = londonTime.get(Calendar.DAY_OF_WEEK);
-		int hourLondon = londonTime.get(Calendar.HOUR_OF_DAY);
-		int minuteLondon = londonTime.get(Calendar.MINUTE);
-		
-		if((hourLondon >= 20 && hourLondon <= 23 || 
-				hourLondon >=0 && hourLondon <= 7) &&
-				(dayWeekLondon >= 2 && dayWeekLondon <= 6)) {
-			
-			return true;
-			
-		}
-		return false;
-		
-	}
 	
-	private static Calendar getLondonTime(Timestamp time){
-		Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-		int year = time.getYear() + 1900;
-		int month = time.getMonth();
-		int date = time.getDate();
-		int hrs = time.getHours();
-		int mins = time.getMinutes();
-		
-		cal.set(Calendar.YEAR, year);
-		cal.set(Calendar.MONTH, month);
-		cal.set(Calendar.DAY_OF_MONTH, date);
-		cal.set(Calendar.HOUR_OF_DAY, hrs);
-		cal.set(Calendar.MINUTE, mins);
-		Calendar londonTime = convertTimeZones(cal, "Europe/London");
-		return londonTime;
-		
-	}
-	
-	private static Calendar convertTimeZones(Calendar calendar, String timeZone){
-	    Calendar londonTime = new GregorianCalendar(TimeZone.getTimeZone(timeZone));
-	    londonTime.setTimeInMillis(calendar.getTimeInMillis());
-        return londonTime;
-	}
 
 	private static void generateDistanceMovement(List<User> users) {
 		for(User u : users){
@@ -335,7 +291,7 @@ public class ExtractSelectedUsers {
 		List<Tweet> list = new ArrayList<Tweet>();
 		for(Tweet t : tweetList){
 			Timestamp time = t.getDate();
-			Calendar londonTime = getLondonTime(time);
+			Calendar londonTime = DateTimeOperations.getLondonTime(time);
 			if(londonTime.get(Calendar.YEAR) == calendar.get(Calendar.YEAR) && 
 					londonTime.get(Calendar.MONTH) == calendar.get(Calendar.MONTH) && 
 					londonTime.get(Calendar.DAY_OF_MONTH) == calendar.get(Calendar.DAY_OF_MONTH)){
@@ -361,7 +317,7 @@ public class ExtractSelectedUsers {
 			analyzedTweets.clear();
 			for(Tweet t : listTweets){
 				if(! analyzedTweets.contains(t)){
-					Calendar calendar = getLondonTime(t.getDate());
+					Calendar calendar = DateTimeOperations.getLondonTime(t.getDate());
 					List<Tweet> tweetsPerDate = getTweetsByDate(listTweets, calendar);
 					analyzedTweets.addAll(tweetsPerDate);
 					displPerDay = calculateTotalDisplacementPerTweets(tweetsPerDate);

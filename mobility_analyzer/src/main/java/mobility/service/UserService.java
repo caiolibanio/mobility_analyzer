@@ -101,5 +101,13 @@ public class UserService {
 		return userDAO.findAllSelectedUsers();
 	}
 	
+	public List<User> findAllSelectedUsers(int numMessages){
+		return userDAO.findAllSelectedUsers(numMessages);
+	}
+	
+	public List<User> findAllSelectedUsersWithoutMessages(int numMessages){
+		return userDAO.findAllSelectedUsersWithoutMessages(numMessages);
+	}
+	
 
 }
