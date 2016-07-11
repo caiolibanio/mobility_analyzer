@@ -39,7 +39,7 @@ public class UserService {
 				Long idDisplacement = displacementDAO.save(user.getDisplacement(), conn);
 				setDisplacementIdOnEntities(idDisplacement, user);
 				displacementPerDayDAO.save(user.getDisplacement().getListDisplacementsPerDay(), conn);
-				insertPoints(user, conn);
+//				insertPoints(user, conn);
 				distanceDisplacementDAO.save(user.getDisplacement().getListDistanceDisplacements(), conn);
 			}
 			userDAO.saveUsers(users, conn);

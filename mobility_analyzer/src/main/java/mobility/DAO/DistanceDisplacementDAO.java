@@ -50,15 +50,17 @@ public class DistanceDisplacementDAO implements IDAO<DistanceDisplacement> {
 	
 	public void save(List<DistanceDisplacement> displList, Connection conn) throws SQLException {
 		PreparedStatement pstm = null;
-		String sql = "INSERT INTO distance_displacement (distance_displacement, displacement_id, pointa_id, pointb_id) "
-				+ "VALUES (?, ?, ?, ?)";
+		String sql = "INSERT INTO distance_displacement (distance_displacement, displacement_id, geom_a_point, geom_b_point) "
+				+ "VALUES (?, ?, ST_SetSRID(ST_MakePoint(?" + ", " + "?), 4326), ST_SetSRID(ST_MakePoint(?" + ", " + "?), 4326))";
 
 		pstm = conn.prepareStatement(sql);
 		for(DistanceDisplacement entidade : displList){
 			pstm.setDouble(1, entidade.getDistanceDisplacement());
 			pstm.setLong(2, entidade.getDisplacement().getId());
-			pstm.setLong(3, entidade.getPointA().getId());
-			pstm.setLong(4, entidade.getPointB().getId());
+			pstm.setDouble(3, entidade.getPointA().getLongitude());
+			pstm.setDouble(4, entidade.getPointA().getLatitude());
+			pstm.setDouble(5, entidade.getPointB().getLongitude());
+			pstm.setDouble(6, entidade.getPointB().getLatitude());
 			pstm.executeUpdate();
 		}
 		Conexao.close(null, pstm, null);

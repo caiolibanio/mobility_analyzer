@@ -17,5 +17,10 @@ public class Util {
 		String text = "'POINT(" + point.getLongitude() + " " + point.getLatitude() + ")'";
 		return text;
 	}
+	
+	public static String pointToTextWithSRID(Point point){
+		String text = "ST_SetSRID(ST_MakePoint(" + point.getLongitude() + " " + point.getLatitude() + "), 4326)";
+		return text;
+	}
 
 }

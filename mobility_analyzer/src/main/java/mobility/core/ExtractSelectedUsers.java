@@ -1,12 +1,5 @@
 package mobility.core;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -15,15 +8,12 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.TimeZone;
 
 import org.apache.commons.math3.ml.clustering.Cluster;
 import org.apache.commons.math3.ml.clustering.DBSCANClusterer;
 import org.apache.commons.math3.ml.clustering.DoublePoint;
 
-import mobility.DAO.UserDAO;
 import mobility.dbscan.GeoDistance;
 import mobility.service.TweetService;
 import mobility.service.UserService;
@@ -73,7 +63,7 @@ public class ExtractSelectedUsers {
 					u.getTweetList().addAll(tweetService.findTweetsByUser(u.getUser_id()));
 					usersToInsert.add(u);
 					
-					if(usersToInsert.size() == 1000){
+					if(usersToInsert.size() == 10){
 						countUserProcessed += 1000;
 						System.out.println("Users to analyse: " + countUserProcessed);
 						
