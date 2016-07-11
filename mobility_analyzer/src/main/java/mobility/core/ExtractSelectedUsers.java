@@ -40,17 +40,8 @@ public class ExtractSelectedUsers {
 	}
 	
 	private static void calculating() throws SQLException {
-
-		Statement st = null;
-		ResultSet rs = null;
-		int countOK = 0;
-		boolean lastLine = false;
-		int step1 = 1;
-		int step2 = 1000;
-		List<Tweet> tweets = new ArrayList<Tweet>();
 		List<User> users = new ArrayList<User>();
 		List<User> usersToInsert = new ArrayList<User>();
-		int countStepToInsert = 0;
 		int countUserProcessed = 0;
 
 		try {
@@ -63,7 +54,7 @@ public class ExtractSelectedUsers {
 					u.getTweetList().addAll(tweetService.findTweetsByUser(u.getUser_id()));
 					usersToInsert.add(u);
 					
-					if(usersToInsert.size() == 10){
+					if(usersToInsert.size() == 1000){
 						countUserProcessed += 1000;
 						System.out.println("Users to analyse: " + countUserProcessed);
 						
@@ -237,7 +228,6 @@ public class ExtractSelectedUsers {
 	}
 
 	private static void calculateDistancePerDisplacement(List<User> users) {
-		Double displCount = 0.0;
 		for (User u : users) {
 			List<Tweet> listTweets = u.getTweetList();
 			Collections.sort(listTweets);
