@@ -55,7 +55,7 @@ public class CorrelationCalculator {
 		listUsers = new ArrayList<User>();
 		listSocioData = new ArrayList<SocioData>();
 		matrixSocialData = socioDataService.findAllMatrix();
-		listUsers.addAll(userService.findAllSelectedUsers(1000));
+		listUsers.addAll(userService.findAllSelectedUsers(100));
 	}
 	
 	public void findMuiltiCorrelationTotalDistanceByWeekend(String method, String locationBased){
