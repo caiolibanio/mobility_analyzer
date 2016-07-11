@@ -1,5 +1,6 @@
 package mobility.core;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -87,6 +88,18 @@ public class GeoCalculator {
 		}
 	}
 	
+	public Double generateDisplacementValue(List<Tweet> listTweets){
+		Collections.sort(listTweets);
+		Double totaldisplacement = 0.0;
+		for(int i = 1; i < listTweets.size(); i++){
+			Tweet tweet = listTweets.get(i);
+			Tweet predTweet = listTweets.get(i-1);
+			totaldisplacement += calculateDistance(tweet.getLatitude(), 
+					tweet.getLongitude(), predTweet.getLatitude(), predTweet.getLongitude());
+		}
+		return totaldisplacement;
+	}
+	
 	public void generateDisplacement(List<Tweet> listTweets){
 		Collections.sort(listTweets);
 		for(int i = 1; i < listTweets.size(); i++){
@@ -106,6 +119,28 @@ public class GeoCalculator {
 		}
 		sum = Math.sqrt((sum / points.size()));
 		return sum;
+	}
+	
+	public Double calculateRadiusOfGyration(List<Point> points){ //in meters
+		Double sum = 0.0;
+		Double[] midPoint = calculateMidPoint(points);
+		Point point = new Point(midPoint[0], midPoint[1]);
+		
+		for(Point t : points){
+			Double base = calculateDistance(t.getLatitude(), t.getLongitude(), point.getLatitude(), point.getLongitude());
+			sum += Math.pow(base, 2);
+		}
+		sum = Math.sqrt((sum / points.size()));
+		return sum;
+	}
+	
+	public List<Point> tweetsAsPoints(List<Tweet> tweetList){
+		List<Point> points = new ArrayList<Point>();
+		for(Tweet t : tweetList){
+			Point p = new Point(t.getLatitude(), t.getLongitude());
+			points.add(p);
+		}
+		return points;
 	}
 	
 	

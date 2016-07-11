@@ -129,8 +129,32 @@ public class UserDAO implements IDAO<User> {
 		Connection conn = Conexao.open();
 		PreparedStatement pstm = null;
 		ResultSet rs = null;
+//		String sql = "select * from geo_tweets_users order by user_id";
+		 String sql = "select * from auxiliar order by user_id";
+		List<User> userList = new ArrayList<User>();
+		User user = null;
+		try {
+			pstm = conn.prepareStatement(sql);
+			rs = pstm.executeQuery();
+			while (rs.next()) {
+				user = new User(new ArrayList<Tweet>());
+				user.setUser_id(rs.getLong("user_id"));
+				userList.add(user);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			Conexao.close(conn, pstm, rs);
+		}
+		return userList;
+	}
+	
+	public List<User> findAllUsersGeoTweetComp() {
+		Connection conn = Conexao.open();
+		PreparedStatement pstm = null;
+		ResultSet rs = null;
 		String sql = "select * from geo_tweets_users order by user_id";
-		// String sql = "select * from auxiliar order by user_id";
+//		 String sql = "select * from auxiliar order by user_id";
 		List<User> userList = new ArrayList<User>();
 		User user = null;
 		try {
@@ -177,6 +201,7 @@ public class UserDAO implements IDAO<User> {
 				user.setHomePolygonCode(rs.getString("home_social_data_code"));
 				user.setCentroidPolygonCode(rs.getString("centroid_social_data_code"));
 				userList.add(user);
+				System.out.println(++count);
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -284,7 +309,7 @@ public class UserDAO implements IDAO<User> {
 
 				user = new User(new ArrayList<Tweet>());
 				user.setUser_id(rs.getLong("user_id"));
-				user.setDisplacement(findDisplacementById(rs.getLong("displacement_id"), listDisplacement));
+//				user.setDisplacement(findDisplacementById(rs.getLong("displacement_id"), listDisplacement));
 				user.setNum_messages(rs.getInt("num_messages"));
 				user.setPointCentroid(Util.textToPoint(rs.getString("centroid")));
 				user.setPointHome(Util.textToPoint(rs.getString("home")));

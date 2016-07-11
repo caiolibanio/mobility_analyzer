@@ -65,19 +65,23 @@ public class ExtractSelectedUsers {
 
 		try {
 			users = getUserList();
+			List<User> usersComp = new ArrayList<User>();
+			usersComp = getUserListComp();
 
 			for (User u : users) {
-				u.getTweetList().addAll(tweetService.findTweetsByUser(u.getUser_id()));
-				usersToInsert.add(u);
-				
-				if(usersToInsert.size() == 1000){
-					countUserProcessed += 1000;
-					System.out.println("Users to analyse: " + countUserProcessed);
+				if(usersComp.contains(u)){
+					u.getTweetList().addAll(tweetService.findTweetsByUser(u.getUser_id()));
+					usersToInsert.add(u);
 					
-					analyseUsers(usersToInsert);
-					insert(usersToInsert);
-					usersToInsert.clear();
-					
+					if(usersToInsert.size() == 1000){
+						countUserProcessed += 1000;
+						System.out.println("Users to analyse: " + countUserProcessed);
+						
+						analyseUsers(usersToInsert);
+						insert(usersToInsert);
+						usersToInsert.clear();
+						
+					}
 				}
 				
 			}
@@ -99,6 +103,10 @@ public class ExtractSelectedUsers {
 
 	}
 	
+	private static List<User> getUserListComp() {
+		return userService.findAllUsersGeoTweetComp();
+	}
+
 	private static void analyseUsers(List<User> usersToInsert) throws SQLException {
 		filteringMessagesByQuantity(usersToInsert);
 		findUserCentroid(usersToInsert);

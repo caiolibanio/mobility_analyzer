@@ -89,6 +89,10 @@ public class UserService {
 		return userDAO.findAllUsersGeoTweet();
 	}
 	
+	public List<User> findAllUsersGeoTweetComp(){
+		return userDAO.findAllUsersGeoTweetComp();
+	}
+	
 	public Point findUserCentroid(Long userId){
 		return userDAO.findUserCentroid(userId);
 	}

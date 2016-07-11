@@ -13,6 +13,7 @@ public class Tweet implements Comparable<Tweet>{
 	private Timestamp date;
 	private Double returnProb;
 	private Double userDisplacement = 0.0;
+	private boolean toAnalyse = false;
 	
 	public Tweet(Long tid, String jsoon) {
 		super();
@@ -91,6 +92,14 @@ public class Tweet implements Comparable<Tweet>{
 
 	public void setUserDisplacement(Double userDisplacement) {
 		this.userDisplacement = userDisplacement;
+	}
+
+	public boolean isToAnalyse() {
+		return toAnalyse;
+	}
+
+	public void setToAnalyse(boolean toAnalyse) {
+		this.toAnalyse = toAnalyse;
 	}
 
 	@Override

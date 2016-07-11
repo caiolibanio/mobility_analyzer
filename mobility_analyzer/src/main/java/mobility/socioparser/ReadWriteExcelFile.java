@@ -159,9 +159,9 @@ public class ReadWriteExcelFile {
 		fileOut.close();
 	}
 	
-public static void writeXLSFileTableCorrelations(ArrayList<ArrayList<String>> matrixCells) throws IOException {
+public static void writeXLSFileTableCorrelations(ArrayList<ArrayList<String>> matrixCells, String fileName) throws IOException {
 		
-		String excelFileName = "Test.xls";//name of excel file
+		String excelFileName = fileName + ".xls";//name of excel file
 
 		String sheetName = "Sheet1";//name of sheet
 

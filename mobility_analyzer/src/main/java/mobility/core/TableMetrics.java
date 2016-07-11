@@ -214,7 +214,7 @@ public class TableMetrics {
 		for(User u : users){
 			Double[] midPoint = calc.calculateMidPoint(u.tweetsAsPoints());
 			Point midP = new Point(midPoint[0], midPoint[1]);
-			generalRadius += calc.calculateRadiusOfGyration(u.tweetsAsPoints(), midP);
+			generalRadius += calc.calculateRadiusOfGyration(u.tweetsAsPoints());
 		}
 		
 		return generalRadius / users.size();
@@ -227,7 +227,7 @@ public class TableMetrics {
 		for(User u : users){
 			Double[] midPoint = calc.calculateMidPoint(u.tweetsAsPoints());
 			Point midP = new Point(midPoint[0], midPoint[1]);
-			radList.add(calc.calculateRadiusOfGyration(u.tweetsAsPoints(), midP));
+			radList.add(calc.calculateRadiusOfGyration(u.tweetsAsPoints()));
 		}
 		
 		Collections.sort(radList);
