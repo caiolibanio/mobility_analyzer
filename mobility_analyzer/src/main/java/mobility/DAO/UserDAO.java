@@ -151,8 +151,8 @@ public class UserDAO implements IDAO<User> {
 		Connection conn = Conexao.open();
 		PreparedStatement pstm = null;
 		ResultSet rs = null;
-//		String sql = "select * from geo_tweets_users order by user_id";
-		 String sql = "select * from auxiliar order by user_id";
+		String sql = "select * from geo_tweets_users order by user_id";
+//		 String sql = "select * from auxiliar order by user_id";
 		List<User> userList = new ArrayList<User>();
 		User user = null;
 		try {

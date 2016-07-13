@@ -20,11 +20,10 @@ import mobility.service.UserService;
 
 public class ExtractSelectedUsers {
 
-	
 	private static GeoCalculator calc = new GeoCalculator();
-	
+
 	private static UserService userService = new UserService();
-	
+
 	private static TweetService tweetService = new TweetService();
 
 	public static void main(String[] args) {
@@ -38,7 +37,7 @@ public class ExtractSelectedUsers {
 			System.err.println("Erro fatal!");
 		}
 	}
-	
+
 	private static void calculating() throws SQLException {
 		List<User> users = new ArrayList<User>();
 		List<User> usersToInsert = new ArrayList<User>();
@@ -46,32 +45,28 @@ public class ExtractSelectedUsers {
 
 		try {
 			users = getUserList();
-			List<User> usersComp = new ArrayList<User>();
-			usersComp = getUserListComp();
 
 			for (User u : users) {
-				if(usersComp.contains(u)){
-					u.getTweetList().addAll(tweetService.findTweetsByUser(u.getUser_id()));
-					usersToInsert.add(u);
+
+				u.getTweetList().addAll(tweetService.findTweetsByUser(u.getUser_id()));
+				usersToInsert.add(u);
+
+				if (usersToInsert.size() == 1000) {
+					countUserProcessed += 1000;
 					
-					if(usersToInsert.size() == 1000){
-						countUserProcessed += 1000;
-						System.out.println("Users to analyse: " + countUserProcessed);
-						
-						analyseUsers(usersToInsert);
-						insert(usersToInsert);
-						usersToInsert.clear();
-						
-					}
+					analyseUsers(usersToInsert);
+					insert(usersToInsert);
+					System.out.println("Analysed Users: " + countUserProcessed);
+					usersToInsert.clear();
+
 				}
-				
+
 			}
-			if(usersToInsert.size() > 0){
+			if (usersToInsert.size() > 0) {
 				analyseUsers(usersToInsert);
 				insert(usersToInsert);
 				usersToInsert.clear();
 			}
-			
 
 		} catch (SQLException se) {
 			System.err.println("Erro Fatal no processo!");
@@ -80,10 +75,9 @@ public class ExtractSelectedUsers {
 
 		Date date = new Date();
 		System.out.println(date);
-		
 
 	}
-	
+
 	private static List<User> getUserListComp() {
 		return userService.findAllUsersGeoTweetComp();
 	}
@@ -96,52 +90,51 @@ public class ExtractSelectedUsers {
 		findHomePoint(usersToInsert);
 		calculateRadius(usersToInsert);
 		calculateNumMessages(usersToInsert);
-		
+
 	}
 
 	private static void calculateNumMessages(List<User> users) {
-		for(User u : users){
+		for (User u : users) {
 			u.setNum_messages(u.getTweetList().size());
 		}
 	}
 
 	private static void calculateRadius(List<User> users) {
-		for(User u: users){
+		for (User u : users) {
 			u.setRadiusOfGyration(calc.calculateRadiusOfGyration(u.tweetsAsPoints(), u.getPointCentroid()));
 		}
-		
+
 	}
 
 	private static void findUserCentroid(List<User> users) throws SQLException {
-		
-		for(User u : users){
+
+		for (User u : users) {
 			Point centroid = userService.findUserCentroid(u.getUser_id());
 			u.setPointCentroid(centroid);
 		}
 	}
 
 	private static void findHomePoint(List<User> users) {
-		for(User u: users){
+		for (User u : users) {
 			List<DoublePoint> points = formatPointsToCluster(u);
 			List<Cluster<DoublePoint>> cluster = clusteringPoints(points);
-			if(cluster.size() > 0){
+			if (cluster.size() > 0) {
 				Point home = findingHome(cluster);
 				u.setPointHome(home);
-			}else{
+			} else {
 				u.setPointHome(new Point(0.0, 0.0));
 			}
-			
-			
+
 		}
 	}
-	
+
 	private static Point findingHome(List<Cluster<DoublePoint>> cluster) {
-		List<List<DoublePoint>> listOfClusters = new ArrayList<List<DoublePoint>>();  
-		for(Cluster<DoublePoint> c: cluster){
+		List<List<DoublePoint>> listOfClusters = new ArrayList<List<DoublePoint>>();
+		for (Cluster<DoublePoint> c : cluster) {
 			List<DoublePoint> singleCluster = new ArrayList<DoublePoint>();
-			for(DoublePoint p : c.getPoints()){
+			for (DoublePoint p : c.getPoints()) {
 				singleCluster.add(p);
-	    	}
+			}
 			listOfClusters.add(singleCluster);
 		}
 		List<DoublePoint> homeCluster = findBiggestCluster(listOfClusters);
@@ -151,7 +144,7 @@ public class ExtractSelectedUsers {
 
 	private static Point calculateHomePoint(List<DoublePoint> homeCluster) {
 		List<Point> points = new ArrayList<Point>();
-		for(DoublePoint p : homeCluster){
+		for (DoublePoint p : homeCluster) {
 			double[] dPoint = p.getPoint();
 			Point point = new Point(dPoint[0], dPoint[1]);
 			points.add(point);
@@ -163,10 +156,10 @@ public class ExtractSelectedUsers {
 
 	private static List<DoublePoint> findBiggestCluster(List<List<DoublePoint>> listOfClusters) {
 		int index = 0;
-		
-		for(int i = 0; i < listOfClusters.size(); i++){
-			
-			if(listOfClusters.get(i).size() > index){
+
+		for (int i = 0; i < listOfClusters.size(); i++) {
+
+			if (listOfClusters.get(i).size() > index) {
 				index = i;
 			}
 		}
@@ -181,32 +174,30 @@ public class ExtractSelectedUsers {
 
 	private static List<DoublePoint> formatPointsToCluster(User user) {
 
-	    List<DoublePoint> points = new ArrayList<DoublePoint>();
-	    for (Tweet t : user.getTweetList()) {
-	    	if(DateTimeOperations.isHomeTime(t)){
-	    		double[] d = new double[2];
-		    	d[0] = t.getLatitude();
-	            d[1] = t.getLongitude();
-	            points.add(new DoublePoint(d));
-	    	}
-	    }
-	    return points;
+		List<DoublePoint> points = new ArrayList<DoublePoint>();
+		for (Tweet t : user.getTweetList()) {
+			if (DateTimeOperations.isHomeTime(t)) {
+				double[] d = new double[2];
+				d[0] = t.getLatitude();
+				d[1] = t.getLongitude();
+				points.add(new DoublePoint(d));
+			}
+		}
+		return points;
 	}
-	
-	
 
 	private static void generateDistanceMovement(List<User> users) {
-		for(User u : users){
+		for (User u : users) {
 			calc.generateDisplacement(u.getTweetList());
 			Double totalDispl = 0.0;
-			for(Tweet t : u.getTweetList()){
+			for (Tweet t : u.getTweetList()) {
 				totalDispl += t.getUserDisplacement();
 			}
 			u.setUser_movement(totalDispl);
 		}
-		
+
 	}
-	
+
 	private static void generateDisplacements(List<User> users) {
 		generateDistanceMovement(users);
 		calculateTotalDisplacement(users);
@@ -214,9 +205,9 @@ public class ExtractSelectedUsers {
 		calculateDistancePerDisplacement(users);
 		calculateDisplacementAttrb(users);
 	}
-	
+
 	private static void calculateDisplacementAttrb(List<User> users) {
-		for(User u : users){
+		for (User u : users) {
 			u.getDisplacement().generateLowDisplacementPerDay(5);
 			u.getDisplacement().generateTopDisplacementPerDay(5);
 			u.getDisplacement().generateLowDistanceDisplacement(5);
@@ -224,7 +215,7 @@ public class ExtractSelectedUsers {
 			u.getDisplacement().calculateDisplacementPerDayMedian();
 			u.getDisplacement().calculateDistanceDisplacementMedian();
 		}
-		
+
 	}
 
 	private static void calculateDistancePerDisplacement(List<User> users) {
@@ -252,45 +243,45 @@ public class ExtractSelectedUsers {
 
 	private static void calculateTotalDisplacement(List<User> users) {
 		int displCount = 0;
-		for(User u : users){
+		for (User u : users) {
 			List<Tweet> listTweets = u.getTweetList();
 			displCount = calculateTotalDisplacementPerTweets(listTweets);
 			u.getDisplacement().setDisplacementCounter(displCount);
 			displCount = 0;
 		}
-		
+
 	}
-	
-	private static int calculateTotalDisplacementPerTweets(List<Tweet> listTweets){
+
+	private static int calculateTotalDisplacementPerTweets(List<Tweet> listTweets) {
 		int displCount = 0;
 		Collections.sort(listTweets);
-		for(int i = 1; i < listTweets.size(); i++){
+		for (int i = 1; i < listTweets.size(); i++) {
 			Tweet tweet = listTweets.get(i);
-			Tweet predTweet = listTweets.get(i-1);
-			if(isDisplacement(tweet.getLatitude(), tweet.getLongitude(),
-					predTweet.getLatitude(), predTweet.getLongitude())){
+			Tweet predTweet = listTweets.get(i - 1);
+			if (isDisplacement(tweet.getLatitude(), tweet.getLongitude(), predTweet.getLatitude(),
+					predTweet.getLongitude())) {
 				displCount++;
 			}
 		}
 		return displCount;
 	}
-	
-	private static List<Tweet> getTweetsByDate(List<Tweet> tweetList, Calendar calendar){
+
+	private static List<Tweet> getTweetsByDate(List<Tweet> tweetList, Calendar calendar) {
 		List<Tweet> list = new ArrayList<Tweet>();
-		for(Tweet t : tweetList){
+		for (Tweet t : tweetList) {
 			Timestamp time = t.getDate();
 			Calendar londonTime = DateTimeOperations.getLondonTime(time);
-			if(londonTime.get(Calendar.YEAR) == calendar.get(Calendar.YEAR) && 
-					londonTime.get(Calendar.MONTH) == calendar.get(Calendar.MONTH) && 
-					londonTime.get(Calendar.DAY_OF_MONTH) == calendar.get(Calendar.DAY_OF_MONTH)){
+			if (londonTime.get(Calendar.YEAR) == calendar.get(Calendar.YEAR)
+					&& londonTime.get(Calendar.MONTH) == calendar.get(Calendar.MONTH)
+					&& londonTime.get(Calendar.DAY_OF_MONTH) == calendar.get(Calendar.DAY_OF_MONTH)) {
 				list.add(t);
 			}
 		}
 		return list;
 	}
-	
-	private static boolean isDisplacement(Double lat1, Double lon1, Double lat2, Double lon2){
-		if(calc.calculateDistance(lat1, lon1, lat2, lon2) > 45){
+
+	private static boolean isDisplacement(Double lat1, Double lon1, Double lat2, Double lon2) {
+		if (calc.calculateDistance(lat1, lon1, lat2, lon2) > 45) {
 			return true;
 		}
 		return false;
@@ -299,17 +290,17 @@ public class ExtractSelectedUsers {
 	private static void calculateDisplacementPerDay(List<User> users) {
 		int displPerDay = 0;
 		List<Tweet> analyzedTweets = new ArrayList<Tweet>();
-		for(User u : users){
+		for (User u : users) {
 			List<Tweet> listTweets = u.getTweetList();
 			Collections.sort(listTweets);
 			analyzedTweets.clear();
-			for(Tweet t : listTweets){
-				if(! analyzedTweets.contains(t)){
+			for (Tweet t : listTweets) {
+				if (!analyzedTweets.contains(t)) {
 					Calendar calendar = DateTimeOperations.getLondonTime(t.getDate());
 					List<Tweet> tweetsPerDate = getTweetsByDate(listTweets, calendar);
 					analyzedTweets.addAll(tweetsPerDate);
 					displPerDay = calculateTotalDisplacementPerTweets(tweetsPerDate);
-					if(displPerDay > 0){
+					if (displPerDay > 0) {
 						DisplacementPerDay displacement = new DisplacementPerDay();
 						displacement.setDisplacementPerDay(displPerDay);
 						displacement.setDate(t.getDate());
@@ -318,39 +309,39 @@ public class ExtractSelectedUsers {
 				}
 			}
 		}
-		
+
 	}
-	
+
 	private static void insert(List<User> users) throws SQLException {
 		userService.saveUsers(users);
 	}
 
 	private static void filteringMessagesByDisplacement(List<User> users) {
 		List<User> toAdd = new ArrayList<User>();
-		for(User u : users){
-			for(Tweet t : u.getTweetList()){
-				if(calc.calculateDistance(u.getPointCentroid().getLatitude(), u.getPointCentroid().
-						getLongitude(), t.getLatitude(), t.getLongitude()) >= 45.0){
+		for (User u : users) {
+			for (Tweet t : u.getTweetList()) {
+				if (calc.calculateDistance(u.getPointCentroid().getLatitude(), u.getPointCentroid().getLongitude(),
+						t.getLatitude(), t.getLongitude()) >= 45.0) {
 					toAdd.add(u);
 					break;
 				}
 			}
 		}
-		
+
 		users.clear();
 		users.addAll(toAdd);
-		
+
 	}
 
 	private static void filteringMessagesByQuantity(List<User> users) {
 		List<User> toRemove = new ArrayList<User>();
-		for(User u : users){
-			if(u.getTweetList().size() < 20){
+		for (User u : users) {
+			if (u.getTweetList().size() < 20) {
 				toRemove.add(u);
 			}
 		}
 		users.removeAll(toRemove);
-		
+
 	}
 
 	private static List<User> getUserList() throws SQLException {
@@ -359,5 +350,3 @@ public class ExtractSelectedUsers {
 	}
 
 }
-
-
