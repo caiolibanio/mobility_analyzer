@@ -11,6 +11,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.ml.clustering.Cluster;
+import org.apache.commons.math3.ml.clustering.DBSCANClusterer;
+import org.apache.commons.math3.ml.clustering.DoublePoint;
 
 import mobility.DAO.SocialDataDAO;
 import mobility.core.DateTimeOperations;
@@ -19,6 +22,7 @@ import mobility.core.Point;
 import mobility.core.SocioData;
 import mobility.core.Tweet;
 import mobility.core.User;
+import mobility.dbscan.GeoDistance;
 import mobility.service.SocioDataService;
 import mobility.service.UserService;
 import mobility.socioparser.ReadWriteExcelFile;
@@ -31,7 +35,7 @@ public class CorrelationCalculator {
 	
 	private SocioDataService socioDataService = new SocioDataService();
 	
-	private List<User> listUsers;
+	private static List<User> listUsers;
 	
 	private List<SocioData> listSocioData;
 	
@@ -55,9 +59,264 @@ public class CorrelationCalculator {
 		listUsers = new ArrayList<User>();
 		listSocioData = new ArrayList<SocioData>();
 		matrixSocialData = socioDataService.findAllMatrix();
-		listUsers.addAll(userService.findAllSelectedUsers(100));
+		listUsers.addAll(userService.findAllSelectedUsersWithoutMessages(5500));
 	}
 	
+	public void findMuiltiCorrelationAll(String method, String locationBased){
+		String code = null;
+		List<Double> listRadius = new ArrayList<Double>();
+		List<Double> listTotalMovement = new ArrayList<Double>();
+		List<Integer> listNumberOfMessages = new ArrayList<Integer>();
+		ArrayList<ArrayList<String>> matrixY = new ArrayList<ArrayList<String>>();
+		ArrayList<ArrayList<String>> columnMatrix = new ArrayList<ArrayList<String>>();
+		matrixY.add(matrixSocialData.get(0));
+		for(User user : listUsers){
+			if(locationBased.equals("home")){
+				code = user.getHomePolygonCode();
+			}else{
+				code = user.getCentroidPolygonCode();
+			}
+			
+			if(code != null){ //verificar ponto fora de londres
+				
+				listRadius.add(user.getRadiusOfGyration());
+				listTotalMovement.add(user.getUser_movement());
+				listNumberOfMessages.add(user.getNum_messages());
+				fillSocialDataMatrixByCode(code, matrixY);
+			}
+		}
+		
+		System.out.println(matrixY.size());
+		columnMatrix = createColimnMatrix(matrixY);
+		fillColumnLabelsTest("Total Distance", columnMatrix);
+		RealMatrix realMatrix = calculateMultiCorrelationsFormatedTest(listRadius, listTotalMovement, listNumberOfMessages,columnMatrix, method);
+		saveMultiCorrelationsToXLS(realMatrix, "MuiltiCorrelationAll");
+		
+	}
+	
+	public void findMuiltiCorrelationByActivitiesCenters(String method, String locationBased){
+		String code = null;
+		List<Double> listRadius = new ArrayList<Double>();
+		List<Double> listTotalMovement = new ArrayList<Double>();
+		List<Integer> listNumberOfMessages = new ArrayList<Integer>();
+		ArrayList<ArrayList<String>> matrixY = new ArrayList<ArrayList<String>>();
+		ArrayList<ArrayList<String>> columnMatrix = new ArrayList<ArrayList<String>>();
+		matrixY.add(matrixSocialData.get(0));
+		
+		for(String label : columnsToIgnore){
+			matrixY.get(0).remove(label);   //remover labels ignorados
+		}
+		
+		for(User user : listUsers){
+			if(locationBased.equals("home")){
+				code = user.getHomePolygonCode();
+			}else{
+				code = user.getCentroidPolygonCode();
+			}
+			
+			if(code != null){ //verificar ponto fora de londres
+				
+				listRadius.add(user.getRadiusOfGyration());
+				listTotalMovement.add(user.getUser_movement());
+				listNumberOfMessages.add(user.getNum_messages());
+				List<DoublePoint> pointsWithoutHome = findClusteredPointsWithoutHome(user);
+				if(pointsWithoutHome.size() > 0){
+					fillSocialDataMatrixByActivityCenter(matrixY, pointsWithoutHome);
+				}
+				
+				
+			}
+		}
+		
+		System.out.println(matrixY.size());
+		columnMatrix = createColimnMatrix(matrixY);
+		fillColumnLabelsTest("Total Distance", columnMatrix);
+		RealMatrix realMatrix = calculateMultiCorrelationsFormatedTest(listRadius, listTotalMovement, listNumberOfMessages,columnMatrix, method);
+		saveMultiCorrelationsToXLS(realMatrix, "ActivitiesCentersMedians");
+		
+	}
+	
+	private void fillSocialDataMatrixByActivityCenter(ArrayList<ArrayList<String>> matrixY, List<DoublePoint> listOfPoints) {
+//		int codeIndex = findCodeIndex(code);
+//		for(ArrayList<String> list : matrixSocialData){
+//			if(list.get(codeIndex).equals(code)){
+//				matrixY.add(list);
+//				break;
+//			}
+//		}
+		matrixY.add(generateUserSocialMedianValues(listOfPoints, matrixY.get(0)));
+		
+		
+		
+	}
+	
+	private ArrayList<String> generateUserSocialMedianValues(List<DoublePoint> listOfPoints, ArrayList<String> listOfLabels){
+		ArrayList<String> listOfMedians = new ArrayList<String>();
+		
+		
+			ArrayList<ArrayList<String>> listOfValues = new ArrayList<ArrayList<String>>();
+			for(DoublePoint point : listOfPoints){
+				double[] dPoint = point.getPoint();
+				Point p = new Point(dPoint[0], dPoint[1]);
+				listOfValues.add(socioDataService.findValueFromCoords(listOfLabels, p));
+			}
+			
+			listOfMedians = calculateListOfMedians(listOfValues);
+		
+		return listOfMedians;
+		
+	}
+	
+	private ArrayList<String> calculateListOfMedians(ArrayList<ArrayList<String>> listOfValues) {
+		ArrayList<String> listOfMedians = new ArrayList<String>();
+		int numberOfColumns = listOfValues.get(0).size();
+		int numberOfLines = listOfValues.size();
+		Double value = 0.0;
+		
+		for(int col = 0; col < numberOfColumns; col++){
+			for(int row = 0; row < numberOfLines; row++){
+				value += Double.parseDouble(listOfValues.get(row).get(col));
+			}
+			Double median = value / numberOfLines;
+			listOfMedians.add(String.valueOf(median));
+		}
+		return listOfMedians;
+		
+	}
+
+	private List<DoublePoint> findClusteredPointsWithoutHome(User user) {
+		List<DoublePoint> listOfPoints = new ArrayList<DoublePoint>();
+		List<DoublePoint> points = formatPointsToClusterGeneral(user);
+		List<Cluster<DoublePoint>> cluster = clusteringPoints(points);
+		List<List<DoublePoint>> listOfClusters = returnClustersList(cluster);
+		List<List<DoublePoint>> listOfClustersWithoutHome = removeHomeCluster(listOfClusters);
+		
+		for (List<DoublePoint> c : listOfClustersWithoutHome) {
+			for (DoublePoint p : c) {
+				if(!listOfPoints.contains(p)){
+					listOfPoints.add(p);
+				}
+			}
+		}
+		return listOfPoints;
+		
+	}
+	
+	private List<List<DoublePoint>> removeHomeCluster(List<List<DoublePoint>> listOfClusters) {
+		List<DoublePoint> homeCluster = findBiggestCluster(listOfClusters);
+		listOfClusters.remove(homeCluster);
+		return listOfClusters;
+	}
+	
+	private static List<DoublePoint> findBiggestCluster(List<List<DoublePoint>> listOfClusters) {
+		int index = 0;
+		for (int i = 0; i < listOfClusters.size(); i++) {
+			if (listOfClusters.get(i).size() > index) {
+				index = i;
+			}
+		}
+		return listOfClusters.get(index);
+	}
+
+	private List<List<DoublePoint>> returnClustersList(List<Cluster<DoublePoint>> cluster) {
+		List<List<DoublePoint>> listOfClusters = new ArrayList<List<DoublePoint>>();
+		for (Cluster<DoublePoint> c : cluster) {
+			List<DoublePoint> singleCluster = new ArrayList<DoublePoint>();
+			for (DoublePoint p : c.getPoints()) {
+				singleCluster.add(p);
+			}
+			listOfClusters.add(singleCluster);
+		}
+		return listOfClusters;
+	}
+
+	private static List<Cluster<DoublePoint>> clusteringPoints(List<DoublePoint> points) {
+		DBSCANClusterer dbscan = new DBSCANClusterer(45.0, 4, new GeoDistance());
+		List<Cluster<DoublePoint>> cluster = dbscan.cluster(points);
+		return cluster;
+	}
+	
+	private static List<DoublePoint> formatPointsToCluster(User user) {
+
+		List<DoublePoint> points = new ArrayList<DoublePoint>();
+		for (Tweet t : user.getTweetList()) {
+			if (DateTimeOperations.isHomeTime(t)) {
+				double[] d = new double[2];
+				d[0] = t.getLatitude();
+				d[1] = t.getLongitude();
+				points.add(new DoublePoint(d));
+			}
+		}
+		return points;
+	}
+	
+	private static List<DoublePoint> formatPointsToClusterGeneral(User user) {
+
+		List<DoublePoint> points = new ArrayList<DoublePoint>();
+		for (Tweet t : user.getTweetList()) {
+
+			double[] d = new double[2];
+			d[0] = t.getLatitude();
+			d[1] = t.getLongitude();
+			points.add(new DoublePoint(d));
+
+		}
+		return points;
+	}
+	
+	private void fillColumnLabelsTest(String string, ArrayList<ArrayList<String>> columnMatrix) {
+		columnsLabels.add("Radius");
+		columnsLabels.add("Total_movement");
+		columnsLabels.add("Number_of_messages");
+		for(ArrayList<String> list : columnMatrix){
+			columnsLabels.add(list.get(0));
+		}
+		
+	}
+
+	private RealMatrix calculateMultiCorrelationsFormatedTest(List<Double> listRadius, List<Double> listTotalMovement,
+			List<Integer> listNumberOfMessages, ArrayList<ArrayList<String>> columnMatrix, String method) {
+		double[][] matrix = new double[listRadius.size()][columnMatrix.size() + 3];
+		String values = "mobility_variable" + System.lineSeparator();
+		
+		for (int i = 0; i < listRadius.size(); i++) {
+			matrix[i][0] = listRadius.get(i);
+			values += matrix[i][0] + System.lineSeparator();
+
+		}
+		
+		for (int i = 0; i < listTotalMovement.size(); i++) {
+			matrix[i][1] = listTotalMovement.get(i);
+			values += matrix[i][1] + System.lineSeparator();
+
+		}
+		
+		for (int i = 0; i < listNumberOfMessages.size(); i++) {
+			matrix[i][2] = listNumberOfMessages.get(i);
+			values += matrix[i][2] + System.lineSeparator();
+
+		}
+		
+		values += "---" + System.lineSeparator();
+
+
+		String valZ = null;
+		for(int i = 0; i < columnMatrix.size(); i++){
+			valZ = columnMatrix.get(i).remove(0);
+			values += valZ + System.lineSeparator();
+			
+			for(int j = 0; j < columnMatrix.get(i).size(); j++){
+				matrix[j][i+3] = Double.valueOf(columnMatrix.get(i).get(j));
+				values += matrix[j][i+3] + System.lineSeparator();
+			}
+			values += "---" + System.lineSeparator();
+			
+		}
+//		writeOnFile(values);
+		RealMatrix realMatrix = calclateMultiCorrelations(matrix, method);
+		return realMatrix;
+	}
+
 	public void findMuiltiCorrelationTotalDistanceByWeekend(String method, String locationBased){
 		String code = null;
 		List<Double> listX = new ArrayList<Double>();
@@ -504,6 +763,8 @@ public class CorrelationCalculator {
 		
 		
 	}
+	
+	
 
 	private int findCodeIndex(String code) {
 		for(int i = 0; i < matrixSocialData.get(0).size(); i++){
@@ -558,13 +819,34 @@ public class CorrelationCalculator {
 		public static void main (String args[]){
 			CorrelationCalculator corr = new CorrelationCalculator();
 			corr.initData();
-			corr.findMuiltiCorrelationTotalDistanceByWeekend("kendall", "home");
-			corr.findMuiltiCorrelationRadiusByWeekend("kendall", "home");
-			corr.findMuiltiCorrelationNumMessagesByWeekend("kendall", "home");
+//			corr.findMuiltiCorrelationTotalDistanceByWeekend("kendall", "home");
+//			corr.findMuiltiCorrelationRadiusByWeekend("kendall", "home");
+//			corr.findMuiltiCorrelationNumMessagesByWeekend("kendall", "home");
+//			
+//			corr.findMuiltiCorrelationTotalDistanceByWeekdays("kendall", "home");
+//			corr.findMuiltiCorrelationRadiusByWeekdays("kendall", "home");
+//			corr.findMuiltiCorrelationNumMessagesByWeekdays("kendall", "home");
+			corr.findMuiltiCorrelationAll("kendall", "home");
 			
-			corr.findMuiltiCorrelationTotalDistanceByWeekdays("kendall", "home");
-			corr.findMuiltiCorrelationRadiusByWeekdays("kendall", "home");
-			corr.findMuiltiCorrelationNumMessagesByWeekdays("kendall", "home");
+			
+			
+//			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home");
+//			
+//			removeUsersByNumOfMessages(2500);
+//			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home");
+//			removeUsersByNumOfMessages(5500);
+//			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home");
+			
+		}
+
+		private static void removeUsersByNumOfMessages(int val) {
+			List<User> toRemove = new ArrayList<User>();
+			for(User u: listUsers){
+				if(u.getNum_messages() < val){
+					toRemove.add(u);
+				}
+			}
+			listUsers.removeAll(toRemove);
 		}
 
 		

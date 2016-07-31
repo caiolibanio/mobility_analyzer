@@ -230,4 +230,41 @@ public class SocialDataDAO implements IDAO<SocioData> {
 		return code;
 	}
 
+	public ArrayList<String> findValueFromCoords(List<String> columnsList, Point point) {
+		Connection conn = Conexao.open();
+		PreparedStatement pstm = null;
+		ResultSet rs = null;
+		ArrayList<String> values = new ArrayList<String>();
+		String columns = generateSelectColumns(columnsList);
+		String pointPostgres = "'" + "POINT(" + point.getLongitude() + " " + point.getLatitude() + ")" + "'";
+		String sql = "SELECT " + columns + " FROM social_data WHERE st_contains(geom, ST_GeomFromText(" + pointPostgres + ", 4326)) = TRUE";
+		try {
+			pstm = conn.prepareStatement(sql);
+			rs = pstm.executeQuery();
+			if(rs.next()){
+				for(int i = 1; i <= columnsList.size(); i++){
+					values.add(rs.getObject(i).toString());
+				}
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally {
+            Conexao.close(conn, pstm, rs);
+        }
+		return values;
+	}
+
+	private String generateSelectColumns(List<String> columnsList) {
+		String columnsToSelect = "";
+		for(int i = 0; i < columnsList.size(); i++){
+			if(i == columnsList.size() - 1){
+				columnsToSelect += columnsList.get(i);
+			}else{
+				columnsToSelect += columnsList.get(i) + ", ";
+			}
+		}
+		return columnsToSelect;
+	}
+
 }

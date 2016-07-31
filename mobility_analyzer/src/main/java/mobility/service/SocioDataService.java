@@ -26,5 +26,9 @@ public class SocioDataService {
 	public ArrayList<ArrayList<String>> findAllMatrix(){
 		return socioDAO.findAllMatrix();
 	}
+	
+	public ArrayList<String> findValueFromCoords(List<String> columnsList, Point point){
+		return socioDAO.findValueFromCoords(columnsList, point);
+	}
 
 }

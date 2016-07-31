@@ -55,7 +55,7 @@ public class ExtractSelectedUsers {
 					countUserProcessed += 1000;
 					
 					analyseUsers(usersToInsert);
-					insert(usersToInsert);
+//					insert(usersToInsert);
 					System.out.println("Analysed Users: " + countUserProcessed);
 					usersToInsert.clear();
 
@@ -64,7 +64,7 @@ public class ExtractSelectedUsers {
 			}
 			if (usersToInsert.size() > 0) {
 				analyseUsers(usersToInsert);
-				insert(usersToInsert);
+//				insert(usersToInsert);
 				usersToInsert.clear();
 			}
 
