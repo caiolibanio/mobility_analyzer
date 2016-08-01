@@ -119,11 +119,11 @@ public class CorrelationCalculator {
 				listRadius.add(user.getRadiusOfGyration());
 				listTotalMovement.add(user.getUser_movement());
 				listNumberOfMessages.add(user.getNum_messages());
-				List<DoublePoint> pointsWithoutHome = findClusteredPoints(user);
+				List<DoublePoint> clusteredPoints = findClusteredPoints(user);
 				System.out.println("Clusterizou: " + count);
 				++count;
-				if(pointsWithoutHome.size() > 0){
-					fillSocialDataMatrixByActivityCenter(matrixY, pointsWithoutHome);
+				if(clusteredPoints.size() > 0){
+					fillSocialDataMatrixByActivityCenter(matrixY, clusteredPoints);
 				}
 				
 				
@@ -190,10 +190,10 @@ public class CorrelationCalculator {
 		List<DoublePoint> listOfPoints = new ArrayList<DoublePoint>();
 		List<DoublePoint> points = formatPointsToClusterGeneral(user);
 		List<Cluster<DoublePoint>> cluster = clusteringPoints(points);
-		List<List<DoublePoint>> listOfClusters = returnClustersList(cluster);
+		ArrayList<ArrayList<DoublePoint>> listOfClusters = returnClustersList(cluster);
 //		List<List<DoublePoint>> listOfClustersWithoutHome = removeHomeCluster(listOfClusters);
 		
-		for (List<DoublePoint> c : listOfClusters) {
+		for (ArrayList<DoublePoint> c : listOfClusters) {
 			for (DoublePoint p : c) {
 				if(!listOfPoints.contains(p)){
 					listOfPoints.add(p);
@@ -220,10 +220,10 @@ public class CorrelationCalculator {
 		return listOfClusters.get(index);
 	}
 
-	private List<List<DoublePoint>> returnClustersList(List<Cluster<DoublePoint>> cluster) {
-		List<List<DoublePoint>> listOfClusters = new ArrayList<List<DoublePoint>>();
+	private ArrayList<ArrayList<DoublePoint>> returnClustersList(List<Cluster<DoublePoint>> cluster) {
+		ArrayList<ArrayList<DoublePoint>> listOfClusters = new ArrayList<ArrayList<DoublePoint>>();
 		for (Cluster<DoublePoint> c : cluster) {
-			List<DoublePoint> singleCluster = new ArrayList<DoublePoint>();
+			ArrayList<DoublePoint> singleCluster = new ArrayList<DoublePoint>();
 			for (DoublePoint p : c.getPoints()) {
 				singleCluster.add(p);
 			}
