@@ -59,7 +59,7 @@ public class CorrelationCalculator {
 		listUsers = new ArrayList<User>();
 		listSocioData = new ArrayList<SocioData>();
 		matrixSocialData = socioDataService.findAllMatrix();
-		listUsers.addAll(userService.findAllSelectedUsersWithoutMessages(5500));
+		listUsers.addAll(userService.findAllSelectedUsers(1000));
 	}
 	
 	public void findMuiltiCorrelationAll(String method, String locationBased){
@@ -94,7 +94,7 @@ public class CorrelationCalculator {
 		
 	}
 	
-	public void findMuiltiCorrelationByActivitiesCenters(String method, String locationBased){
+	public void findMuiltiCorrelationByActivitiesCenters(String method, String locationBased, String outPutFileName){
 		String code = null;
 		List<Double> listRadius = new ArrayList<Double>();
 		List<Double> listTotalMovement = new ArrayList<Double>();
@@ -106,7 +106,7 @@ public class CorrelationCalculator {
 		for(String label : columnsToIgnore){
 			matrixY.get(0).remove(label);   //remover labels ignorados
 		}
-		
+		int count = 1;
 		for(User user : listUsers){
 			if(locationBased.equals("home")){
 				code = user.getHomePolygonCode();
@@ -119,7 +119,9 @@ public class CorrelationCalculator {
 				listRadius.add(user.getRadiusOfGyration());
 				listTotalMovement.add(user.getUser_movement());
 				listNumberOfMessages.add(user.getNum_messages());
-				List<DoublePoint> pointsWithoutHome = findClusteredPointsWithoutHome(user);
+				List<DoublePoint> pointsWithoutHome = findClusteredPoints(user);
+				System.out.println("Clusterizou: " + count);
+				++count;
 				if(pointsWithoutHome.size() > 0){
 					fillSocialDataMatrixByActivityCenter(matrixY, pointsWithoutHome);
 				}
@@ -132,7 +134,7 @@ public class CorrelationCalculator {
 		columnMatrix = createColimnMatrix(matrixY);
 		fillColumnLabelsTest("Total Distance", columnMatrix);
 		RealMatrix realMatrix = calculateMultiCorrelationsFormatedTest(listRadius, listTotalMovement, listNumberOfMessages,columnMatrix, method);
-		saveMultiCorrelationsToXLS(realMatrix, "ActivitiesCentersMedians");
+		saveMultiCorrelationsToXLS(realMatrix, outPutFileName);
 		
 	}
 	
@@ -184,14 +186,14 @@ public class CorrelationCalculator {
 		
 	}
 
-	private List<DoublePoint> findClusteredPointsWithoutHome(User user) {
+	private List<DoublePoint> findClusteredPoints(User user) {
 		List<DoublePoint> listOfPoints = new ArrayList<DoublePoint>();
 		List<DoublePoint> points = formatPointsToClusterGeneral(user);
 		List<Cluster<DoublePoint>> cluster = clusteringPoints(points);
 		List<List<DoublePoint>> listOfClusters = returnClustersList(cluster);
-		List<List<DoublePoint>> listOfClustersWithoutHome = removeHomeCluster(listOfClusters);
+//		List<List<DoublePoint>> listOfClustersWithoutHome = removeHomeCluster(listOfClusters);
 		
-		for (List<DoublePoint> c : listOfClustersWithoutHome) {
+		for (List<DoublePoint> c : listOfClusters) {
 			for (DoublePoint p : c) {
 				if(!listOfPoints.contains(p)){
 					listOfPoints.add(p);
@@ -826,16 +828,17 @@ public class CorrelationCalculator {
 //			corr.findMuiltiCorrelationTotalDistanceByWeekdays("kendall", "home");
 //			corr.findMuiltiCorrelationRadiusByWeekdays("kendall", "home");
 //			corr.findMuiltiCorrelationNumMessagesByWeekdays("kendall", "home");
-			corr.findMuiltiCorrelationAll("kendall", "home");
+//			corr.findMuiltiCorrelationAll("kendall", "home");
 			
 			
-			
-//			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home");
-//			
-//			removeUsersByNumOfMessages(2500);
-//			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home");
-//			removeUsersByNumOfMessages(5500);
-//			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home");
+			System.out.println("Esta em 1000...");
+			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home", "ActivitiesCentersMedians_1000");
+			System.out.println("Esta em 2500...");
+			removeUsersByNumOfMessages(2500);
+			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home", "ActivitiesCentersMedians_2500");
+			System.out.println("Esta em 5500...");
+			removeUsersByNumOfMessages(5500);
+			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home", "ActivitiesCentersMedians_5500");
 			
 		}
 
