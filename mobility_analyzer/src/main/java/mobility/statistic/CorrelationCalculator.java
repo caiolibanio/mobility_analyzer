@@ -59,7 +59,7 @@ public class CorrelationCalculator {
 		listUsers = new ArrayList<User>();
 		listSocioData = new ArrayList<SocioData>();
 		matrixSocialData = socioDataService.findAllMatrix();
-		listUsers.addAll(userService.findAllSelectedUsers(1000));
+		listUsers.addAll(userService.findAllSelectedUsers(4500));
 	}
 	
 	public void findMuiltiCorrelationAll(String method, String locationBased){
@@ -831,14 +831,14 @@ public class CorrelationCalculator {
 //			corr.findMuiltiCorrelationAll("kendall", "home");
 			
 			
-			System.out.println("Esta em 1000...");
-			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home", "ActivitiesCentersMedians_1000");
-			System.out.println("Esta em 2500...");
-			removeUsersByNumOfMessages(2500);
-			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home", "ActivitiesCentersMedians_2500");
-			System.out.println("Esta em 5500...");
-			removeUsersByNumOfMessages(5500);
-			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home", "ActivitiesCentersMedians_5500");
+//			System.out.println("Esta em 1000...");
+//			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home", "ActivitiesCentersMedians_1000");
+//			System.out.println("Esta em 2500...");
+//			removeUsersByNumOfMessages(2500);
+//			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home", "ActivitiesCentersMedians_2500");
+//			System.out.println("Esta em 5500...");
+//			removeUsersByNumOfMessages(5500);
+			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home", "ActivitiesCentersMedians_4500");
 			
 		}
 
