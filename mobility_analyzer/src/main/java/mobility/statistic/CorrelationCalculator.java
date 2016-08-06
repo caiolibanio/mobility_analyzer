@@ -60,10 +60,59 @@ public class CorrelationCalculator {
 		listUsers = new ArrayList<User>();
 		listSocioData = new ArrayList<SocioData>();
 		matrixSocialData = socioDataService.findAllMatrix();
-		listUsers.addAll(userService.findAllSelectedUsers(4500));
+		listUsers.addAll(userService.findAllSelectedUsers(1000));
 	}
 	
-	public void findMuiltiCorrelationAll(String method, String locationBased){
+	public void initDataToTest(ArrayList<ArrayList<String>> matrixSocialDataFromTest,
+			List<User> listUsersFromTest){
+		columnsToIgnore.add("code");
+		columnsToIgnore.add("name");
+		columnsToIgnore.add("geom");
+		listUsers = new ArrayList<User>();
+		listSocioData = new ArrayList<SocioData>();
+		matrixSocialData = matrixSocialDataFromTest;
+		listUsers.addAll(listUsersFromTest);
+	}
+	
+	public RealMatrix findMuiltiCorrelationAllToTest(String method, String locationBased){
+		String code = null;
+		List<Double> listRadius = new ArrayList<Double>();
+		List<Double> listTotalMovement = new ArrayList<Double>();
+		List<Integer> listNumberOfMessages = new ArrayList<Integer>();
+		ArrayList<ArrayList<String>> matrixY = new ArrayList<ArrayList<String>>();
+		ArrayList<ArrayList<String>> columnMatrix = new ArrayList<ArrayList<String>>();
+		matrixY.add(matrixSocialData.get(0));
+		int count = 1;
+		for (User user : listUsers) {
+			
+			if(count == 1){
+				code = "100";
+			}else if(count == 2){
+				code = "101";
+			}else if(count == 3){
+				code = "102";
+			}else if(count == 4){
+				code = "103";
+			}
+			++count;
+			
+			listRadius.add(user.getRadiusOfGyration());
+			listTotalMovement.add(user.getUser_movement());
+			listNumberOfMessages.add(user.getNum_messages());
+			fillSocialDataMatrixByCode(code, matrixY);
+
+		}
+
+		System.out.println(matrixY.size());
+		columnMatrix = createColimnMatrix(matrixY);
+		fillColumnLabelsTest("Total Distance", columnMatrix);
+		RealMatrix realMatrix = calculateMultiCorrelationsFormatedTest(listRadius, listTotalMovement, listNumberOfMessages,columnMatrix, method);
+		saveMultiCorrelationsToXLS(realMatrix, "MuiltiCorrelationAll");
+		return realMatrix;
+		
+	}
+	
+	public void findMuiltiCorrelationAll(String method, String locationBased, String outputFileName){
 		String code = null;
 		List<Double> listRadius = new ArrayList<Double>();
 		List<Double> listTotalMovement = new ArrayList<Double>();
@@ -91,7 +140,7 @@ public class CorrelationCalculator {
 		columnMatrix = createColimnMatrix(matrixY);
 		fillColumnLabelsTest("Total Distance", columnMatrix);
 		RealMatrix realMatrix = calculateMultiCorrelationsFormatedTest(listRadius, listTotalMovement, listNumberOfMessages,columnMatrix, method);
-		saveMultiCorrelationsToXLS(realMatrix, "MuiltiCorrelationAll");
+		saveMultiCorrelationsToXLS(realMatrix, outputFileName);
 		
 	}
 	
@@ -870,17 +919,17 @@ public class CorrelationCalculator {
 //			corr.findMuiltiCorrelationTotalDistanceByWeekdays("kendall", "home");
 //			corr.findMuiltiCorrelationRadiusByWeekdays("kendall", "home");
 //			corr.findMuiltiCorrelationNumMessagesByWeekdays("kendall", "home");
-//			corr.findMuiltiCorrelationAll("kendall", "home");
+//			corr.findMuiltiCorrelationAll("spearman", "home", "MultiCorrelationAll_5500");
 			
 			
-//			System.out.println("Esta em 1000...");
-//			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home", "ActivitiesCentersMedians_1000");
-//			System.out.println("Esta em 2500...");
-//			removeUsersByNumOfMessages(2500);
-//			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home", "ActivitiesCentersMedians_2500");
-//			System.out.println("Esta em 5500...");
-//			removeUsersByNumOfMessages(5500);
-			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home", "ActivitiesCentersMedians_4500");
+			System.out.println("Esta em 1000...");
+			corr.findMuiltiCorrelationByActivitiesCenters("spearman", "home", "ActivitiesCentersMedians_1000");
+			System.out.println("Esta em 2500...");
+			removeUsersByNumOfMessages(2500);
+			corr.findMuiltiCorrelationByActivitiesCenters("spearman", "home", "ActivitiesCentersMedians_2500");
+			System.out.println("Esta em 5500...");
+			removeUsersByNumOfMessages(5500);
+			corr.findMuiltiCorrelationByActivitiesCenters("spearman", "home", "ActivitiesCentersMedians_5500");
 			
 		}
 
