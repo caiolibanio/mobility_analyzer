@@ -6,6 +6,7 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -59,7 +60,7 @@ public class CorrelationCalculator {
 		listUsers = new ArrayList<User>();
 		listSocioData = new ArrayList<SocioData>();
 		matrixSocialData = socioDataService.findAllMatrix();
-		listUsers.addAll(userService.findAllSelectedUsersWithoutMessages(5500));
+		listUsers.addAll(userService.findAllSelectedUsers(4500));
 	}
 	
 	public void findMuiltiCorrelationAll(String method, String locationBased){
@@ -94,7 +95,7 @@ public class CorrelationCalculator {
 		
 	}
 	
-	public void findMuiltiCorrelationByActivitiesCenters(String method, String locationBased){
+	public void findMuiltiCorrelationByActivitiesCenters(String method, String locationBased, String outPutFileName){
 		String code = null;
 		List<Double> listRadius = new ArrayList<Double>();
 		List<Double> listTotalMovement = new ArrayList<Double>();
@@ -106,7 +107,7 @@ public class CorrelationCalculator {
 		for(String label : columnsToIgnore){
 			matrixY.get(0).remove(label);   //remover labels ignorados
 		}
-		
+		int count = 1;
 		for(User user : listUsers){
 			if(locationBased.equals("home")){
 				code = user.getHomePolygonCode();
@@ -119,9 +120,11 @@ public class CorrelationCalculator {
 				listRadius.add(user.getRadiusOfGyration());
 				listTotalMovement.add(user.getUser_movement());
 				listNumberOfMessages.add(user.getNum_messages());
-				List<DoublePoint> pointsWithoutHome = findClusteredPointsWithoutHome(user);
-				if(pointsWithoutHome.size() > 0){
-					fillSocialDataMatrixByActivityCenter(matrixY, pointsWithoutHome);
+				List<DoublePoint> clusteredPoints = findClusteredPoints(user);
+				System.out.println("Clusterizou: " + count);
+				++count;
+				if(clusteredPoints.size() > 0){
+					fillSocialDataMatrixByActivityCenter(matrixY, clusteredPoints);
 				}
 				
 				
@@ -132,7 +135,7 @@ public class CorrelationCalculator {
 		columnMatrix = createColimnMatrix(matrixY);
 		fillColumnLabelsTest("Total Distance", columnMatrix);
 		RealMatrix realMatrix = calculateMultiCorrelationsFormatedTest(listRadius, listTotalMovement, listNumberOfMessages,columnMatrix, method);
-		saveMultiCorrelationsToXLS(realMatrix, "ActivitiesCentersMedians");
+		saveMultiCorrelationsToXLS(realMatrix, outPutFileName);
 		
 	}
 	
@@ -144,13 +147,30 @@ public class CorrelationCalculator {
 //				break;
 //			}
 //		}
-		matrixY.add(generateUserSocialMedianValues(listOfPoints, matrixY.get(0)));
+		matrixY.add(generateUserSocialValuesMedians(listOfPoints, matrixY.get(0)));
 		
 		
 		
 	}
-	
-	private ArrayList<String> generateUserSocialMedianValues(List<DoublePoint> listOfPoints, ArrayList<String> listOfLabels){
+	//Calc of medias
+	private ArrayList<String> generateUserSocialValuesMedia(List<DoublePoint> listOfPoints, ArrayList<String> listOfLabels){
+		ArrayList<String> listOfMedias = new ArrayList<String>();
+		
+		
+			ArrayList<ArrayList<String>> listOfValues = new ArrayList<ArrayList<String>>();
+			for(DoublePoint point : listOfPoints){
+				double[] dPoint = point.getPoint();
+				Point p = new Point(dPoint[0], dPoint[1]);
+				listOfValues.add(socioDataService.findValueFromCoords(listOfLabels, p));
+			}
+			
+			listOfMedias = calculateListOfMedias(listOfValues);
+		
+		return listOfMedias;
+		
+	}
+	//Calc of medians
+	private ArrayList<String> generateUserSocialValuesMedians(List<DoublePoint> listOfPoints, ArrayList<String> listOfLabels){
 		ArrayList<String> listOfMedians = new ArrayList<String>();
 		
 		
@@ -167,8 +187,8 @@ public class CorrelationCalculator {
 		
 	}
 	
-	private ArrayList<String> calculateListOfMedians(ArrayList<ArrayList<String>> listOfValues) {
-		ArrayList<String> listOfMedians = new ArrayList<String>();
+	private ArrayList<String> calculateListOfMedias(ArrayList<ArrayList<String>> listOfValues) {
+		ArrayList<String> listOfMedias = new ArrayList<String>();
 		int numberOfColumns = listOfValues.get(0).size();
 		int numberOfLines = listOfValues.size();
 		Double value = 0.0;
@@ -177,21 +197,45 @@ public class CorrelationCalculator {
 			for(int row = 0; row < numberOfLines; row++){
 				value += Double.parseDouble(listOfValues.get(row).get(col));
 			}
-			Double median = value / numberOfLines;
+			Double media = value / numberOfLines;
+			listOfMedias.add(String.valueOf(media));
+		}
+		return listOfMedias;
+		
+	}
+	
+	private ArrayList<String> calculateListOfMedians(ArrayList<ArrayList<String>> listOfValues) {
+		ArrayList<String> listOfMedians = new ArrayList<String>();
+		int numberOfColumns = listOfValues.get(0).size();
+		int numberOfLines = listOfValues.size();
+		
+		for(int col = 0; col < numberOfColumns; col++){
+			List<Double> values = new ArrayList<Double>();
+			for(int row = 0; row < numberOfLines; row++){
+				values.add(Double.parseDouble(listOfValues.get(row).get(col)));
+			}
+			Double median = calcMedian(values);
 			listOfMedians.add(String.valueOf(median));
 		}
 		return listOfMedians;
 		
 	}
+	
+	private static Double calcMedian(List<Double> vals) {
+		Collections.sort(vals);
+		int mid = (vals.size() - 1) / 2;
+		return vals.get(mid);
 
-	private List<DoublePoint> findClusteredPointsWithoutHome(User user) {
+	}
+
+	private List<DoublePoint> findClusteredPoints(User user) {
 		List<DoublePoint> listOfPoints = new ArrayList<DoublePoint>();
 		List<DoublePoint> points = formatPointsToClusterGeneral(user);
 		List<Cluster<DoublePoint>> cluster = clusteringPoints(points);
-		List<List<DoublePoint>> listOfClusters = returnClustersList(cluster);
-		List<List<DoublePoint>> listOfClustersWithoutHome = removeHomeCluster(listOfClusters);
+		ArrayList<ArrayList<DoublePoint>> listOfClusters = returnClustersList(cluster);
+//		List<List<DoublePoint>> listOfClustersWithoutHome = removeHomeCluster(listOfClusters);
 		
-		for (List<DoublePoint> c : listOfClustersWithoutHome) {
+		for (ArrayList<DoublePoint> c : listOfClusters) {
 			for (DoublePoint p : c) {
 				if(!listOfPoints.contains(p)){
 					listOfPoints.add(p);
@@ -218,10 +262,10 @@ public class CorrelationCalculator {
 		return listOfClusters.get(index);
 	}
 
-	private List<List<DoublePoint>> returnClustersList(List<Cluster<DoublePoint>> cluster) {
-		List<List<DoublePoint>> listOfClusters = new ArrayList<List<DoublePoint>>();
+	private ArrayList<ArrayList<DoublePoint>> returnClustersList(List<Cluster<DoublePoint>> cluster) {
+		ArrayList<ArrayList<DoublePoint>> listOfClusters = new ArrayList<ArrayList<DoublePoint>>();
 		for (Cluster<DoublePoint> c : cluster) {
-			List<DoublePoint> singleCluster = new ArrayList<DoublePoint>();
+			ArrayList<DoublePoint> singleCluster = new ArrayList<DoublePoint>();
 			for (DoublePoint p : c.getPoints()) {
 				singleCluster.add(p);
 			}
@@ -826,16 +870,17 @@ public class CorrelationCalculator {
 //			corr.findMuiltiCorrelationTotalDistanceByWeekdays("kendall", "home");
 //			corr.findMuiltiCorrelationRadiusByWeekdays("kendall", "home");
 //			corr.findMuiltiCorrelationNumMessagesByWeekdays("kendall", "home");
-			corr.findMuiltiCorrelationAll("kendall", "home");
+//			corr.findMuiltiCorrelationAll("kendall", "home");
 			
 			
-			
-//			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home");
-//			
+//			System.out.println("Esta em 1000...");
+//			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home", "ActivitiesCentersMedians_1000");
+//			System.out.println("Esta em 2500...");
 //			removeUsersByNumOfMessages(2500);
-//			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home");
+//			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home", "ActivitiesCentersMedians_2500");
+//			System.out.println("Esta em 5500...");
 //			removeUsersByNumOfMessages(5500);
-//			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home");
+			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home", "ActivitiesCentersMedians_4500");
 			
 		}
 
