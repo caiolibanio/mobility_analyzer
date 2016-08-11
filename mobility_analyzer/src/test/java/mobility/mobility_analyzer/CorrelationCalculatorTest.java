@@ -74,7 +74,7 @@ public class CorrelationCalculatorTest {
 	public void Testing(){
 		CorrelationCalculator corr = new CorrelationCalculator();
 		corr.initDataToTest(matrixSocialData, listUsers);
-		RealMatrix matrixResult = corr.findMuiltiCorrelationAllToTest("kendall", "home");
+		RealMatrix matrixResult = corr.findMuiltiCorrelationAllToTest("kendall", "home", "MultiCorrelationAllToTest");
 		double[] columnsVals = matrixResult.getColumn(3);
 		
 		assertEquals(1, columnsVals[0], 0.001);

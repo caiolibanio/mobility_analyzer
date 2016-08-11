@@ -50,6 +50,8 @@ public class CorrelationCalculator {
 	
 	private GeoCalculator geoCalculator = new GeoCalculator();
 	
+	private List<ClusteredUser> listClusteredUsers = new ArrayList<ClusteredUser>();
+	
 	
 	
 	
@@ -60,7 +62,7 @@ public class CorrelationCalculator {
 		listUsers = new ArrayList<User>();
 		listSocioData = new ArrayList<SocioData>();
 		matrixSocialData = socioDataService.findAllMatrix();
-		listUsers.addAll(userService.findAllSelectedUsers(1000));
+		listUsers.addAll(userService.findAllSelectedUsers(2500));
 	}
 	
 	public void initDataToTest(ArrayList<ArrayList<String>> matrixSocialDataFromTest,
@@ -74,7 +76,7 @@ public class CorrelationCalculator {
 		listUsers.addAll(listUsersFromTest);
 	}
 	
-	public RealMatrix findMuiltiCorrelationAllToTest(String method, String locationBased){
+	public RealMatrix findMuiltiCorrelationAllToTest(String method, String locationBased, String outputFileName){
 		String code = null;
 		List<Double> listRadius = new ArrayList<Double>();
 		List<Double> listTotalMovement = new ArrayList<Double>();
@@ -106,7 +108,7 @@ public class CorrelationCalculator {
 		System.out.println(matrixY.size());
 		columnMatrix = createColimnMatrix(matrixY);
 		fillColumnLabelsTest("Total Distance", columnMatrix);
-		RealMatrix realMatrix = calculateMultiCorrelationsFormatedTest(listRadius, listTotalMovement, listNumberOfMessages,columnMatrix, method);
+		RealMatrix realMatrix = calculateMultiCorrelationsFormatedTest(listRadius, listTotalMovement, listNumberOfMessages,columnMatrix, method, outputFileName);
 		saveMultiCorrelationsToXLS(realMatrix, "MuiltiCorrelationAll");
 		return realMatrix;
 		
@@ -139,7 +141,7 @@ public class CorrelationCalculator {
 		System.out.println(matrixY.size());
 		columnMatrix = createColimnMatrix(matrixY);
 		fillColumnLabelsTest("Total Distance", columnMatrix);
-		RealMatrix realMatrix = calculateMultiCorrelationsFormatedTest(listRadius, listTotalMovement, listNumberOfMessages,columnMatrix, method);
+		RealMatrix realMatrix = calculateMultiCorrelationsFormatedTest(listRadius, listTotalMovement, listNumberOfMessages,columnMatrix, method, outputFileName);
 		saveMultiCorrelationsToXLS(realMatrix, outputFileName);
 		
 	}
@@ -166,13 +168,13 @@ public class CorrelationCalculator {
 			
 			if(code != null){ //verificar ponto fora de londres
 				
-				listRadius.add(user.getRadiusOfGyration());
-				listTotalMovement.add(user.getUser_movement());
-				listNumberOfMessages.add(user.getNum_messages());
 				List<DoublePoint> clusteredPoints = findClusteredPoints(user);
 				System.out.println("Clusterizou: " + count);
 				++count;
 				if(clusteredPoints.size() > 0){
+					listRadius.add(user.getRadiusOfGyration());
+					listTotalMovement.add(user.getUser_movement());
+					listNumberOfMessages.add(user.getNum_messages());
 					fillSocialDataMatrixByActivityCenter(matrixY, clusteredPoints);
 				}
 				
@@ -183,7 +185,7 @@ public class CorrelationCalculator {
 		System.out.println(matrixY.size());
 		columnMatrix = createColimnMatrix(matrixY);
 		fillColumnLabelsTest("Total Distance", columnMatrix);
-		RealMatrix realMatrix = calculateMultiCorrelationsFormatedTest(listRadius, listTotalMovement, listNumberOfMessages,columnMatrix, method);
+		RealMatrix realMatrix = calculateMultiCorrelationsFormatedTest(listRadius, listTotalMovement, listNumberOfMessages,columnMatrix, method, outPutFileName);
 		saveMultiCorrelationsToXLS(realMatrix, outPutFileName);
 		
 	}
@@ -280,7 +282,13 @@ public class CorrelationCalculator {
 	private List<DoublePoint> findClusteredPoints(User user) {
 		List<DoublePoint> listOfPoints = new ArrayList<DoublePoint>();
 		List<DoublePoint> points = formatPointsToClusterGeneral(user);
-		List<Cluster<DoublePoint>> cluster = clusteringPoints(points);
+		List<Cluster<DoublePoint>> cluster = checkClusteredUser(user);
+		
+		if(cluster == null){
+			cluster = clusteringPoints(points);
+			ClusteredUser clusteredUser = new ClusteredUser(cluster, user.getUser_id());
+			listClusteredUsers.add(clusteredUser);
+		}
 		ArrayList<ArrayList<DoublePoint>> listOfClusters = returnClustersList(cluster);
 //		List<List<DoublePoint>> listOfClustersWithoutHome = removeHomeCluster(listOfClusters);
 		
@@ -295,6 +303,16 @@ public class CorrelationCalculator {
 		
 	}
 	
+	private List<Cluster<DoublePoint>> checkClusteredUser(User user) {
+		
+		for(ClusteredUser u : listClusteredUsers){
+			if(u.getUser_id().equals(user.getUser_id())){
+				return u.getCluster();
+			}
+		}
+		return null;
+	}
+
 	private List<List<DoublePoint>> removeHomeCluster(List<List<DoublePoint>> listOfClusters) {
 		List<DoublePoint> homeCluster = findBiggestCluster(listOfClusters);
 		listOfClusters.remove(homeCluster);
@@ -368,22 +386,22 @@ public class CorrelationCalculator {
 	}
 
 	private RealMatrix calculateMultiCorrelationsFormatedTest(List<Double> listRadius, List<Double> listTotalMovement,
-			List<Integer> listNumberOfMessages, ArrayList<ArrayList<String>> columnMatrix, String method) {
+			List<Integer> listNumberOfMessages, ArrayList<ArrayList<String>> columnMatrix, String method, String outPutFileName) {
 		double[][] matrix = new double[listRadius.size()][columnMatrix.size() + 3];
-		String values = "mobility_variable" + System.lineSeparator();
+		String values = "RADIUS" + System.lineSeparator();
 		
 		for (int i = 0; i < listRadius.size(); i++) {
 			matrix[i][0] = listRadius.get(i);
 			values += matrix[i][0] + System.lineSeparator();
 
 		}
-		
+		values += "LIST TOTAL MOVEMENT" + System.lineSeparator();
 		for (int i = 0; i < listTotalMovement.size(); i++) {
 			matrix[i][1] = listTotalMovement.get(i);
 			values += matrix[i][1] + System.lineSeparator();
 
 		}
-		
+		values += "NUMBER OF MESSAGES" + System.lineSeparator();
 		for (int i = 0; i < listNumberOfMessages.size(); i++) {
 			matrix[i][2] = listNumberOfMessages.get(i);
 			values += matrix[i][2] + System.lineSeparator();
@@ -392,7 +410,7 @@ public class CorrelationCalculator {
 		
 		values += "---" + System.lineSeparator();
 
-
+		values += "--------------HERE WE START THE SOCIAL VARIABLES--------------" + System.lineSeparator();
 		String valZ = null;
 		for(int i = 0; i < columnMatrix.size(); i++){
 			valZ = columnMatrix.get(i).remove(0);
@@ -405,7 +423,7 @@ public class CorrelationCalculator {
 			values += "---" + System.lineSeparator();
 			
 		}
-//		writeOnFile(values);
+		writeOnFile(values, outPutFileName);
 		RealMatrix realMatrix = calclateMultiCorrelations(matrix, method);
 		return realMatrix;
 	}
@@ -794,10 +812,10 @@ public class CorrelationCalculator {
 		
 	}
 	
-	public void writeOnFile(String text){
+	public void writeOnFile(String text, String outPutFileName){
 		PrintWriter writer = null;
 		try {
-			writer = new PrintWriter("values.txt", "UTF-8");
+			writer = new PrintWriter(outPutFileName + "_values.txt", "UTF-8");
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -922,14 +940,14 @@ public class CorrelationCalculator {
 //			corr.findMuiltiCorrelationAll("spearman", "home", "MultiCorrelationAll_5500");
 			
 			
-			System.out.println("Esta em 1000...");
-			corr.findMuiltiCorrelationByActivitiesCenters("spearman", "home", "ActivitiesCentersMedians_1000");
+//			System.out.println("Esta em 1000...");
+//			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home", "ActivitiesCentersMedians_1000");
 			System.out.println("Esta em 2500...");
-			removeUsersByNumOfMessages(2500);
-			corr.findMuiltiCorrelationByActivitiesCenters("spearman", "home", "ActivitiesCentersMedians_2500");
+//			removeUsersByNumOfMessages(2500);
+			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home", "ActivitiesCentersMedians_2500");
 			System.out.println("Esta em 5500...");
 			removeUsersByNumOfMessages(5500);
-			corr.findMuiltiCorrelationByActivitiesCenters("spearman", "home", "ActivitiesCentersMedians_5500");
+			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home", "ActivitiesCentersMedians_5500");
 			
 		}
 
