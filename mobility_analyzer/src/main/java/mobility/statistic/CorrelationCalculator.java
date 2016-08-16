@@ -864,7 +864,7 @@ public class CorrelationCalculator {
 	}
 
 	private void fillSocialDataMatrixByCode(String code, ArrayList<ArrayList<String>> matrixY) {
-		int codeIndex = findCodeIndex(code);
+		int codeIndex = findCodeIndex();
 		for(ArrayList<String> list : matrixSocialData){
 			if(list.get(codeIndex).equals(code)){
 				matrixY.add(list);
@@ -877,7 +877,7 @@ public class CorrelationCalculator {
 	
 	
 
-	private int findCodeIndex(String code) {
+	private int findCodeIndex() {
 		for(int i = 0; i < matrixSocialData.get(0).size(); i++){
 			if(matrixSocialData.get(0).get(i).equals("code")){
 				return i;
