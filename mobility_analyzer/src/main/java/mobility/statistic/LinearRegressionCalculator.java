@@ -17,13 +17,15 @@ public class LinearRegressionCalculator {
 	
 	private SocioDataService socioDataService = new SocioDataService();
 	
-	private static List<User> listUsers;
+	private List<User> listUsers;
 	
 	private ArrayList<ArrayList<String>> matrixSocialData = null;
 	
 	private List<String> columnsToIgnore = new ArrayList<String>();
 	
 	private ReadWriteExcelFile excelHandler = new ReadWriteExcelFile();
+	
+	private List<String> resultCombinations = new ArrayList<String>();
 	
 	public void initData(){
 		columnsToIgnore.add("code");
@@ -106,6 +108,45 @@ public class LinearRegressionCalculator {
 			}
 		}
 		return -1;
+	}
+	
+	private void combinations(String[] arr, int len, int startPosition, String[] result){
+	    if (len == 0){
+	        String str = "";
+	        for(String card : result)
+	        {
+	            str += card + ", ";
+	        }
+//	        System.out.println(str);
+	        resultCombinations.add(str);
+	        return;
+	    }       
+	    for (int i = startPosition; i <= arr.length-len; i++){
+	        result[result.length - len] = arr[i];
+	        combinations(arr, len-1, i+1, result);
+	    }
+	}
+	
+	private void generateCombinations(){
+		columnsToIgnore.add("code");
+		columnsToIgnore.add("name");
+		columnsToIgnore.add("geom");
+		
+		List<String> listColumns = socioDataService.findColumnNames();
+		listColumns.removeAll(columnsToIgnore);
+		String[] arr = new String[listColumns.size()];
+		arr = listColumns.toArray(arr);
+	    combinations(arr, 10, 0, new String[10]);
+	    System.out.println(resultCombinations.size());
+	}
+	
+	public static class Teste{
+		public static void main(String args[]){
+			LinearRegressionCalculator linear = new LinearRegressionCalculator();
+			linear.generateCombinations();
+			
+			
+		}
 	}
 
 }

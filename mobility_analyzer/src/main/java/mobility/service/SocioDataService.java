@@ -30,5 +30,9 @@ public class SocioDataService {
 	public ArrayList<String> findValueFromCoords(List<String> columnsList, Point point){
 		return socioDAO.findValueFromCoords(columnsList, point);
 	}
+	
+	public List<String> findColumnNames(){
+		return socioDAO.findColumnNames();
+	}
 
 }

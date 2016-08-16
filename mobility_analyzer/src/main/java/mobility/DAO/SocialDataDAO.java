@@ -134,7 +134,7 @@ public class SocialDataDAO implements IDAO<SocioData> {
 		Connection conn = Conexao.open();
         PreparedStatement pstm = null;
         ResultSet rs = null;
-        ArrayList<ArrayList<String>> matrix = null;
+        ArrayList<ArrayList<String>> matrix = new ArrayList<ArrayList<String>>();
         String sql = "SELECT * FROM social_data";
         
         
@@ -143,7 +143,8 @@ public class SocialDataDAO implements IDAO<SocioData> {
             pstm = conn.prepareStatement(sql);
             rs = pstm.executeQuery();
             
-            matrix = initMatrix(rs);
+            ArrayList<String> columnNames = initMatrix(rs);
+            matrix.add(columnNames);
             fillMatrix(matrix, rs);
             
         } catch (SQLException e) {
@@ -194,16 +195,36 @@ public class SocialDataDAO implements IDAO<SocioData> {
         return countRows;
 	}
 
-	private ArrayList<ArrayList<String>> initMatrix(ResultSet rs) throws SQLException {
-		ArrayList<ArrayList<String>> matrix = new ArrayList<ArrayList<String>>();
+	private ArrayList<String> initMatrix(ResultSet rs) throws SQLException {
 		ArrayList<String> listColumnNames = new ArrayList<String>();
 		ResultSetMetaData metaData = rs.getMetaData();
 		int columnCounter = metaData.getColumnCount();
 		for(int i = 1 ; i <= columnCounter; i++){
 			listColumnNames.add(metaData.getColumnLabel(i));
 		}
-		matrix.add(listColumnNames);
-		return matrix;
+		return listColumnNames;
+		
+	}
+	
+	public List<String> findColumnNames(){
+		Connection conn = Conexao.open();
+        PreparedStatement pstm = null;
+        ResultSet rs = null;
+        List<String> columnNames = new ArrayList<String>();
+        String sql = "SELECT * FROM social_data";
+        
+        try {
+            pstm = conn.prepareStatement(sql);
+            rs = pstm.executeQuery();
+            
+            columnNames = initMatrix(rs);
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            Conexao.close(conn, pstm, rs);
+        }
+        return columnNames;
 		
 	}
 
