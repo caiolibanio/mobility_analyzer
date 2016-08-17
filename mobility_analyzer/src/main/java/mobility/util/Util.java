@@ -1,5 +1,9 @@
 package mobility.util;
 
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+
 import mobility.core.Point;
 
 public class Util {
@@ -21,6 +25,23 @@ public class Util {
 	public static String pointToTextWithSRID(Point point){
 		String text = "ST_SetSRID(ST_MakePoint(" + point.getLongitude() + " " + point.getLatitude() + "), 4326)";
 		return text;
+	}
+	
+	public static void writeOnFile(String text, String outPutFileName){
+		PrintWriter writer = null;
+		try {
+			writer = new PrintWriter(outPutFileName + "_values.txt", "UTF-8");
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		writer.println(text);
+		
+		writer.close();
+	
 	}
 
 }

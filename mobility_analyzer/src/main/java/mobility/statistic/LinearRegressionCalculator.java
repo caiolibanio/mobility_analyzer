@@ -1,13 +1,21 @@
 package mobility.statistic;
 
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
 
 import mobility.core.SocioData;
 import mobility.core.User;
 import mobility.service.SocioDataService;
 import mobility.service.UserService;
 import mobility.socioparser.ReadWriteExcelFile;
+import mobility.util.Util;
 
 public class LinearRegressionCalculator {
 	
@@ -33,10 +41,10 @@ public class LinearRegressionCalculator {
 		columnsToIgnore.add("geom");
 		listUsers = new ArrayList<User>();
 		matrixSocialData = socioDataService.findAllMatrix();
-		listUsers.addAll(userService.findAllSelectedUsers(2500));
+		listUsers.addAll(userService.findAllSelectedUsersWithoutMessages(6000));
 	}
 	
-	public String analyseMultipleRegressions(String locationBased, String outputFileName){
+	public void analyseMultipleRegressions(String locationBased, String outputFileName){
 		String code = null;
 		List<Double> listRadius = new ArrayList<Double>();
 		List<Double> listTotalMovement = new ArrayList<Double>();
@@ -61,39 +69,76 @@ public class LinearRegressionCalculator {
 			}
 		}
 		columnMatrix = createColimnMatrix(matrixY);
-		generateCombinations();
-		calculateMultipleRegression(listRadius, columnMatrix);
-		
-		
-		return null;
+//		generateCombinations();
+		calculateMultipleRegression(listRadius, columnMatrix, outputFileName);
 		
 	}
 	
-	private void calculateMultipleRegression(List<Double> listRadius, ArrayList<ArrayList<String>> columnMatrix) {
+	private void calculateMultipleRegression(List<Double> listRadius, ArrayList<ArrayList<String>> columnMatrix, String outputFileName) {
 		List<Double> regressionList = new ArrayList<Double>();
+		Set<String> combinations = new HashSet<String>();
 		
-		for(ArrayList<String> combinations : resultCombinations){
-			regressionList = generateRegressionList(listRadius, columnMatrix, combinations);
+		for(ArrayList<String> combList : resultCombinations){
+//			regressionList = generateRegressionList(listRadius, columnMatrix, combinations);
+			for(String c : combList){
+				if(c.length() > 1){
+					combinations.add(c);
+				}
+			}
 		}
 		
-//		regressionList = generateRegressionList(listRadius, columnMatrix, combinations);
+		String outPutLine = "";
+		for(String comb : combinations){
+			Double adjRSquared = calculateRegressionAdjRSquared(listRadius, columnMatrix, comb);
+			outPutLine += comb + ": " + adjRSquared + System.lineSeparator();
+		}
+		
+		Util.writeOnFile(outPutLine, outputFileName);
+		
+
 		
 	}
 
-	private List<Double> generateRegressionList(List<Double> listRadius, ArrayList<ArrayList<String>> columnMatrix,
-			List<String> combinations) {
-		List<Double> values = findValuesFromColumnMatrix("", columnMatrix);
+	private Double calculateRegressionAdjRSquared(List<Double> listMobility, ArrayList<ArrayList<String>> columnMatrix,
+			String combination) {
+		List<List<Double>> regresionMatrix = new ArrayList<List<Double>>();
+		regresionMatrix.add(listMobility);
+		String[] columnsFromCombination = combination.split(" ");
 		
-		generateList(combinations, listRadius, columnMatrix);
+		for(String col : columnsFromCombination){
+			List<Double> values = findValuesFromColumnMatrix(col, columnMatrix);
+			regresionMatrix.add(values);
+		}
+		int numberOfColumns = regresionMatrix.get(0).size();
+		int numberOfLines = regresionMatrix.size();
+		List<Double> regressionList = new ArrayList<Double>();
 		
-		return null;
+		for(int col = 0; col < numberOfColumns; col++){
+			for(int row = 0; row < numberOfLines; row++){
+				regressionList.add(regresionMatrix.get(row).get(col));
+			}
+		}
+		
+		int observations = listMobility.size();
+		int variables = regresionMatrix.size() - 1;
+		Double adjRSquared = calculateAdjRSquared(regressionList, observations, variables);
+		
+		return adjRSquared;
 		
 	}
 
-	private void generateList(List<String> listCombinations, List<Double> listRadius,
-			ArrayList<ArrayList<String>> columnMatrix) {
+	
+
+	private Double calculateAdjRSquared(List<Double> regressionList, int observations, int variables) {
+		OLSMultipleLinearRegression ols = new OLSMultipleLinearRegression();
+		double[] data = new double[regressionList.size()];
+		for(int i = 0; i < regressionList.size(); i++){
+			data[i] = regressionList.get(i);
+		}
+		ols.newSampleData(data, observations, variables);
+		Double adjRSquared = ols.calculateAdjustedRSquared();
 		
-		
+		return adjRSquared;
 		
 	}
 
@@ -101,13 +146,14 @@ public class LinearRegressionCalculator {
 		List<Double> vals = new ArrayList<Double>();
 		for(ArrayList<String> list : columnMatrix){
 			if(list.get(0).equals(columnName)){
-				 for(String valString : list){
-					 vals.add(Double.parseDouble(valString));
+				 for(int i = 1; i < list.size(); i++){
+					 vals.add(Double.parseDouble(list.get(i)));
 				 }
+				 return vals;
 			}
-			return vals;
+			
 		}
-		return vals;
+		return null;
 	}
 
 	private ArrayList<ArrayList<String>> createColimnMatrix(ArrayList<ArrayList<String>> matrixY) {
@@ -160,10 +206,10 @@ public class LinearRegressionCalculator {
 	        ArrayList<String> listComb = new ArrayList<String>();
 	        for(String card : result)
 	        {
-//	            str += card + ", ";
-	            listComb.add(card);
+	            str += card + " ";
+	            listComb.add(str.trim());
 	        }
-//	        System.out.println(str);
+	        System.out.println(str);
 	        resultCombinations.add(listComb);
 	        return;
 	    }       
@@ -182,7 +228,9 @@ public class LinearRegressionCalculator {
 		listColumns.removeAll(columnsToIgnore);
 		String[] arr = new String[listColumns.size()];
 		arr = listColumns.toArray(arr);
-	    combinations(arr, 10, 0, new String[10]);
+		arr = new String[]{"age_structure_all_ages", "age_structure_0_15"};
+//		arr = new String[]{"a", "b", "c", "d", "e"};
+	    combinations(arr, 2, 0, new String[2]);
 	    System.out.println(resultCombinations.size());
 	}
 	
@@ -190,7 +238,8 @@ public class LinearRegressionCalculator {
 		public static void main(String args[]){
 			LinearRegressionCalculator linear = new LinearRegressionCalculator();
 			linear.generateCombinations();
-			
+			linear.initData();
+			linear.analyseMultipleRegressions("home", "multRegressionAdjRSquared");
 			
 		}
 	}
