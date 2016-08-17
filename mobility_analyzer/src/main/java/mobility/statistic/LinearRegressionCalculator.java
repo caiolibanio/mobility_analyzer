@@ -25,7 +25,7 @@ public class LinearRegressionCalculator {
 	
 	private ReadWriteExcelFile excelHandler = new ReadWriteExcelFile();
 	
-	private List<String> resultCombinations = new ArrayList<String>();
+	private ArrayList<ArrayList<String>> resultCombinations = new ArrayList<ArrayList<String>>();
 	
 	public void initData(){
 		columnsToIgnore.add("code");
@@ -61,11 +61,55 @@ public class LinearRegressionCalculator {
 			}
 		}
 		columnMatrix = createColimnMatrix(matrixY);
+		generateCombinations();
+		calculateMultipleRegression(listRadius, columnMatrix);
+		
 		
 		return null;
 		
 	}
 	
+	private void calculateMultipleRegression(List<Double> listRadius, ArrayList<ArrayList<String>> columnMatrix) {
+		List<Double> regressionList = new ArrayList<Double>();
+		
+		for(ArrayList<String> combinations : resultCombinations){
+			regressionList = generateRegressionList(listRadius, columnMatrix, combinations);
+		}
+		
+//		regressionList = generateRegressionList(listRadius, columnMatrix, combinations);
+		
+	}
+
+	private List<Double> generateRegressionList(List<Double> listRadius, ArrayList<ArrayList<String>> columnMatrix,
+			List<String> combinations) {
+		List<Double> values = findValuesFromColumnMatrix("", columnMatrix);
+		
+		generateList(combinations, listRadius, columnMatrix);
+		
+		return null;
+		
+	}
+
+	private void generateList(List<String> listCombinations, List<Double> listRadius,
+			ArrayList<ArrayList<String>> columnMatrix) {
+		
+		
+		
+	}
+
+	private List<Double> findValuesFromColumnMatrix(String columnName, ArrayList<ArrayList<String>> columnMatrix) {
+		List<Double> vals = new ArrayList<Double>();
+		for(ArrayList<String> list : columnMatrix){
+			if(list.get(0).equals(columnName)){
+				 for(String valString : list){
+					 vals.add(Double.parseDouble(valString));
+				 }
+			}
+			return vals;
+		}
+		return vals;
+	}
+
 	private ArrayList<ArrayList<String>> createColimnMatrix(ArrayList<ArrayList<String>> matrixY) {
 		int columnCount = matrixY.get(0).size();
 		ArrayList<String> colValues = null;
@@ -113,12 +157,14 @@ public class LinearRegressionCalculator {
 	private void combinations(String[] arr, int len, int startPosition, String[] result){
 	    if (len == 0){
 	        String str = "";
+	        ArrayList<String> listComb = new ArrayList<String>();
 	        for(String card : result)
 	        {
-	            str += card + ", ";
+//	            str += card + ", ";
+	            listComb.add(card);
 	        }
 //	        System.out.println(str);
-	        resultCombinations.add(str);
+	        resultCombinations.add(listComb);
 	        return;
 	    }       
 	    for (int i = startPosition; i <= arr.length-len; i++){
