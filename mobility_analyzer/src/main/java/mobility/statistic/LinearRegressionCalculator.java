@@ -1,9 +1,16 @@
 package mobility.statistic;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -35,13 +42,15 @@ public class LinearRegressionCalculator {
 	
 	private ArrayList<ArrayList<String>> resultCombinations = new ArrayList<ArrayList<String>>();
 	
+	private List<Double> allAdjRSquared = new ArrayList<Double>();
+	
 	public void initData(){
 		columnsToIgnore.add("code");
 		columnsToIgnore.add("name");
 		columnsToIgnore.add("geom");
 		listUsers = new ArrayList<User>();
 		matrixSocialData = socioDataService.findAllMatrix();
-		listUsers.addAll(userService.findAllSelectedUsersWithoutMessages(6000));
+		listUsers.addAll(userService.findAllSelectedUsersWithoutMessages(5500));
 	}
 	
 	public void analyseMultipleRegressions(String locationBased, String outputFileName){
@@ -71,6 +80,8 @@ public class LinearRegressionCalculator {
 		columnMatrix = createColimnMatrix(matrixY);
 //		generateCombinations();
 		calculateMultipleRegression(listRadius, columnMatrix, outputFileName);
+		Collections.sort(allAdjRSquared);
+		System.out.println("Maior R-squared ajustado: " + allAdjRSquared.get(allAdjRSquared.size() - 1));
 		
 	}
 	
@@ -90,6 +101,7 @@ public class LinearRegressionCalculator {
 		String outPutLine = "";
 		for(String comb : combinations){
 			Double adjRSquared = calculateRegressionAdjRSquared(listRadius, columnMatrix, comb);
+			allAdjRSquared.add(adjRSquared);
 			outPutLine += comb + ": " + adjRSquared + System.lineSeparator();
 		}
 		
@@ -209,7 +221,7 @@ public class LinearRegressionCalculator {
 	            str += card + " ";
 	            listComb.add(str.trim());
 	        }
-	        System.out.println(str);
+//	        System.out.println(str);
 	        resultCombinations.add(listComb);
 	        return;
 	    }       
@@ -219,25 +231,97 @@ public class LinearRegressionCalculator {
 	    }
 	}
 	
-	private void generateCombinations(){
-		columnsToIgnore.add("code");
-		columnsToIgnore.add("name");
-		columnsToIgnore.add("geom");
-		
-		List<String> listColumns = socioDataService.findColumnNames();
-		listColumns.removeAll(columnsToIgnore);
-		String[] arr = new String[listColumns.size()];
-		arr = listColumns.toArray(arr);
-		arr = new String[]{"age_structure_all_ages", "age_structure_0_15"};
-//		arr = new String[]{"a", "b", "c", "d", "e"};
-	    combinations(arr, 2, 0, new String[2]);
-	    System.out.println(resultCombinations.size());
+	private void combinationsIt(String[] arr, int len, int startPosition, String[] result){
+//	    if (len == 0){
+//	        String str = "";
+//	        ArrayList<String> listComb = new ArrayList<String>();
+//	        for(String card : result)
+//	        {
+//	            str += card + " ";
+//	            listComb.add(str.trim());
+//	        }
+//	        System.out.println(str);
+////	        resultCombinations.add(listComb);
+//	        return;
+//	    }       
+	    for (int i = startPosition; i <= arr.length-len; i++){
+	        result[result.length - len] = arr[i];
+//	        combinationsIt(arr, len-1, i+1, result);
+	        int lenIn = len - 1;
+	        len -= 1;
+	        int iIn = i + 1;
+	        i += 1;
+	        
+	        if (len == 0){
+    	        String str = "";
+    	        ArrayList<String> listComb = new ArrayList<String>();
+    	        for(String card : result)
+    	        {
+    	            str += card + " ";
+    	            listComb.add(str.trim());
+    	        }
+    	        System.out.println(str);
+//    	        resultCombinations.add(listComb);
+    	        continue;
+    	    }else{
+    	        for (int j = iIn ; j <= arr.length-lenIn; j++){
+    	        	result[result.length - lenIn] = arr[j];
+    	        	lenIn -= 1;
+    	        	
+    	        	
+    	        	if (lenIn == 0){
+    	    	        String str = "";
+    	    	        ArrayList<String> listComb = new ArrayList<String>();
+    	    	        for(String card : result)
+    	    	        {
+    	    	            str += card + " ";
+    	    	            listComb.add(str.trim());
+    	    	        }
+    	    	        System.out.println(str);
+//    	    	        resultCombinations.add(listComb);
+    	    	        break;
+    	    	    }       
+    	        	
+    	        }
+    	    }
+	        
+
+	    }
+	}
+	
+	public void readCombinationsFromFile(File file) throws IOException {
+		FileInputStream fis = new FileInputStream(file);
+
+		// Construct BufferedReader from InputStreamReader
+		BufferedReader br = new BufferedReader(new InputStreamReader(fis));
+
+		String line = null;
+		ArrayList<String> combList = new ArrayList<String>();
+		while ((line = br.readLine()) != null) {
+			line = line.replace("(", "");
+			line = line.replace(",)", "");
+			line = line.replace(")", "");
+			line = line.replace(",", "");
+			line = line.replace("'", "");
+			
+			combList.add(line);
+
+			
+		}
+		resultCombinations.add(combList);
+
+		br.close();
 	}
 	
 	public static class Teste{
 		public static void main(String args[]){
 			LinearRegressionCalculator linear = new LinearRegressionCalculator();
-			linear.generateCombinations();
+			try {
+				linear.readCombinationsFromFile(new File("combinations.txt"));
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			linear.initData();
 			linear.analyseMultipleRegressions("home", "multRegressionAdjRSquared");
 			
