@@ -16,7 +16,7 @@ public class User {
 	private String homePolygonCode;
 	private String centroidPolygonCode;
 	private GeoCalculator geoCalculator = new GeoCalculator();
-	
+	private List<POI> listPois = new ArrayList<POI>();
 	
 	
 	public User(List<Tweet> tweetList) {
@@ -129,7 +129,14 @@ public class User {
 	public void setCentroidPolygonCode(String centroidPolygonCode) {
 		this.centroidPolygonCode = centroidPolygonCode;
 	}
-	
+
+	public List<POI> getListPois() {
+		return listPois;
+	}
+
+	public void setListPois(List<POI> listPois) {
+		this.listPois = listPois;
+	}
 
 	@Override
 	public int hashCode() {
