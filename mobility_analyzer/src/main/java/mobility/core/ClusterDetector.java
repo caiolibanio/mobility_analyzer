@@ -95,8 +95,10 @@ public class ClusterDetector {
 		
 		if(cluster == null){
 			cluster = clusteringPoints(points);
-			ClusteredUser clusteredUser = new ClusteredUser(cluster, user.getUser_id());
-			listClusteredUsers.add(clusteredUser);
+			if(cluster.size() > 0){
+				ClusteredUser clusteredUser = new ClusteredUser(cluster, user.getUser_id());
+				listClusteredUsers.add(clusteredUser);
+			}
 		}
 //		ArrayList<ArrayList<DoublePoint>> listOfClusters = returnClustersList(cluster);
 //
