@@ -393,8 +393,9 @@ public class UserDAO implements IDAO<User> {
 		ResultSet rs = null;
 		User user = null;
 		String sql = "SELECT user_id, num_messages, radius_of_gyration, total_displacement, displacement_id,"
-				+ " geom_home_point AS home, geom_centroid_point AS centroid FROM geo_tweets_users_selected"
-				+ " WHERE user_id = ?";
+				+ " ST_AsText(geom_home_point) AS home, ST_AsText(geom_centroid_point) AS centroid, home_social_data_code,"
+				+ " centroid_social_data_code FROM geo_tweets_users_selected" + " WHERE user_id = ?"
+				+ " ORDER BY user_id";
 		try {
 			pstm = conn.prepareStatement(sql);
 			pstm.setLong(1, userId);
