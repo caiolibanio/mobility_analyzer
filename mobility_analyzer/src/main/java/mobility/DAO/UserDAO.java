@@ -331,7 +331,7 @@ public class UserDAO implements IDAO<User> {
 
 				user = new User(new ArrayList<Tweet>());
 				user.setUser_id(rs.getLong("user_id"));
-//				user.setDisplacement(findDisplacementById(rs.getLong("displacement_id"), listDisplacement));
+				user.setDisplacement(findDisplacementById(rs.getLong("displacement_id"), listDisplacement));
 				user.setNum_messages(rs.getInt("num_messages"));
 				user.setPointCentroid(Util.textToPoint(rs.getString("centroid")));
 				user.setPointHome(Util.textToPoint(rs.getString("home")));

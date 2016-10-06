@@ -86,7 +86,6 @@ public class DisplacementDAO implements IDAO<Displacement> {
 				displacement.setDisplacementCounter(rs.getInt("displacement_counter"));
 				displacement.setDisplacementPerDayMedian(rs.getDouble("displacement_per_day_median"));
 				displacement.setDistanceDisplacementMedian(rs.getDouble("distance_displacement_median"));
-				displacement.setDistanceDisplacementMedian(rs.getDouble("distance_displacement_median"));
 				listDisplacement.add(displacement);
 			}
 		} catch (SQLException e) {

@@ -7,12 +7,22 @@ public class ClusteredPoint {
 	private Point pointMessage;
 	
 	private int clusterNumber;
+	
+	private Long id;
 
 	public ClusteredPoint(Long user_id, Point pointMessage, int clusterNumber) {
 		super();
 		this.user_id = user_id;
 		this.pointMessage = pointMessage;
 		this.clusterNumber = clusterNumber;
+	}
+	
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
 	}
 
 	public Long getUser_id() {

@@ -65,8 +65,11 @@ public class ClusterDetector {
 	}
 
 	private static void clusteringMessagesOfUsers(List<User> usersToInsert) {
+		int count = 0;
 		for(User user : usersToInsert){
 			findClusteredPoints(user);
+			++count;
+			System.out.println("clusterizou: " + count);
 		}
 	}
 	
