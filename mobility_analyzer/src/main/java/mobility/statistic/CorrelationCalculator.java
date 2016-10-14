@@ -406,6 +406,7 @@ public class CorrelationCalculator {
 	}
 	
 	private void fillColumnLabelsTest(String string, ArrayList<ArrayList<String>> columnMatrix) {
+		columnsLabels.clear(); //Ajustar isso!!!
 		columnsLabels.add("Radius");
 		columnsLabels.add("Total_movement");
 		columnsLabels.add("Number_of_messages");
@@ -990,18 +991,20 @@ public class CorrelationCalculator {
 //			corr.findMuiltiCorrelationTotalDistanceByWeekdays("kendall", "home");
 //			corr.findMuiltiCorrelationRadiusByWeekdays("kendall", "home");
 //			corr.findMuiltiCorrelationNumMessagesByWeekdays("kendall", "home");
-//			corr.findMuiltiCorrelationAll("spearman", "home", "MultiCorrelationAll_5500");
+
 			
+//			A partir daqui ja foi executado!!!------------------------------
+			corr.findMuiltiCorrelationAll("spearman", "home", "MultiCorrelationAll_5500");
 			
 //			System.out.println("Esta em 1000...");
-//			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home", "ActivitiesCentersMedians_1000");
+//			corr.findMuiltiCorrelationByActivitiesCenters("spearman", "home", "ActivitiesCentersMedians_1000");
 //			System.out.println("Esta em 2500...");
 //			removeUsersByNumOfMessages(2500);
-//			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home", "ActivitiesCentersMedians_2500");
+//			corr.findMuiltiCorrelationByActivitiesCenters("spearman", "home", "ActivitiesCentersMedians_2500");
 			
-			System.out.println("Esta em 5500...");
-			removeUsersByNumOfMessages(5500);
-			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home", "ActivitiesCentersMedians_5500");
+//			System.out.println("Esta em 5500...");
+//			removeUsersByNumOfMessages(5500);
+//			corr.findMuiltiCorrelationByActivitiesCenters("spearman", "home", "ActivitiesCentersMedians_5500");
 			
 		}
 
