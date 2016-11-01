@@ -1,7 +1,8 @@
 package mobility.service;
 
-import java.util.List;
+import java.util.List; 
 
+import location.PointOfInterest;
 import mobility.DAO.ClusteredPointDAO;
 import mobility.core.ClusteredCentroid;
 import mobility.core.ClusteredPoint;
@@ -39,8 +40,8 @@ public class ClusteredPointService {
 		return clusteredPointDAO.findAllCentroids();
 	}
 	
-	public void updateCentroidPOIName(Long id, String description){
-		clusteredPointDAO.updateCentroidPOIName(id, description);
+	public void updateCentroidPOIName(Long id, PointOfInterest poi){
+		clusteredPointDAO.updateCentroidPOIName(id, poi);
 	}
 	
 }

@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import location.FoursquarePOI;
 import location.POIGrabber;
 import location.PointOfInterest;
 import mobility.service.ClusteredPointService;
@@ -64,15 +65,15 @@ public class POIDetector {
 				
 			}
 			if(closestPOI != null){
-				updateClosestPOIName(centroid.getId(), closestPOI.toString());
+				updateClosestPOIName(centroid.getId(), closestPOI);
 			}
 			
 		}
 		
 	}
 
-	private static void updateClosestPOIName(Long id, String description) {
-		clusteredPointService.updateCentroidPOIName(id, description);
+	private static void updateClosestPOIName(Long id, PointOfInterest poi) {
+		clusteredPointService.updateCentroidPOIName(id, poi);
 		
 	}
 

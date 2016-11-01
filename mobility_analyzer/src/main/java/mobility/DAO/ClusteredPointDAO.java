@@ -7,6 +7,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import location.FoursquarePOI;
+import location.PointOfInterest;
 import mobility.connection.Conexao;
 import mobility.core.ClusteredCentroid;
 import mobility.core.ClusteredPoint;
@@ -145,11 +147,11 @@ public class ClusteredPointDAO implements IDAO<ClusteredPoint> {
 		Connection conn = Conexao.open();
 		PreparedStatement pstm = null;
 		ResultSet rs = null;
-		String sql = "SELECT id, user_id, ST_AsText(message_point) AS centroidPoint, cluster_number, poi_description"
-				+ " FROM clustered_centroids WHERE id > 975 ORDER BY id"; 
-
 //		String sql = "SELECT id, user_id, ST_AsText(message_point) AS centroidPoint, cluster_number, poi_description"
-//				+ " FROM clustered_centroids ORDER BY id"; //Este eh o correto!!!
+//				+ " FROM clustered_centroids WHERE id > 2342 ORDER BY id"; 
+
+		String sql = "SELECT id, user_id, ST_AsText(message_point) AS centroidPoint, cluster_number, poi_description"
+				+ " FROM clustered_centroids ORDER BY id"; //Este eh o correto!!!
 
 		List<ClusteredCentroid> clusteredCentroidList = new ArrayList<ClusteredCentroid>();
 		ClusteredCentroid clusteredCentroid = null;
@@ -224,15 +226,20 @@ public class ClusteredPointDAO implements IDAO<ClusteredPoint> {
 		return centroidPoint;
 	}
 	
-	public void updateCentroidPOIName(Long id, String poiDescription){
+	public void updateCentroidPOIName(Long id, PointOfInterest poi){
 		Connection conn = Conexao.open();
 		PreparedStatement pstm = null;
-        String sql = "UPDATE clustered_centroids SET poi_description = ? WHERE id = ?";
+        String sql = "UPDATE clustered_centroids SET poi_description = ?, poi_name = ?, price = ?, poi_point = ST_SetSRID(ST_MakePoint(?" + ", " + "?), 4326) WHERE id = ?";
         try {
+        	FoursquarePOI fPOI = (FoursquarePOI) poi;
         	conn.setAutoCommit(false);
 			pstm = conn.prepareStatement(sql);
-			pstm.setString(1, poiDescription);
-			pstm.setLong(2, id);
+			pstm.setString(1, fPOI.toString());
+			pstm.setString(2, fPOI.getName());
+			pstm.setInt(3, fPOI.getPrice());
+			pstm.setDouble(4, fPOI.getLng());
+			pstm.setDouble(5, fPOI.getLat());
+			pstm.setLong(6, id);
 			pstm.executeUpdate();
 			conn.commit();
 		} catch (SQLException e) {
