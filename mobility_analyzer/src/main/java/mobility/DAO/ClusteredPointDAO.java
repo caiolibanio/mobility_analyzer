@@ -257,5 +257,30 @@ public class ClusteredPointDAO implements IDAO<ClusteredPoint> {
 			Conexao.close(conn, pstm, null);
 		}
 	}
+	
+	public Double findMedianPriceByUserID(Long user_id){
+		Connection conn = Conexao.open();
+		PreparedStatement pstm = null;
+		ResultSet rs = null;
+		String sql = "SELECT price "
+				+ " FROM clustered_centroids WHERE price > 0 AND user_id = ?";
+
+		List<Integer> prices = new ArrayList<Integer>();
+		Double medianPrice = null;
+		try {
+			pstm = conn.prepareStatement(sql);
+			pstm.setLong(1, user_id);
+			rs = pstm.executeQuery();
+			while (rs.next()) {
+				prices.add(rs.getInt("price"));
+			}
+			medianPrice = ((double) prices.stream().mapToInt(Integer::intValue).sum()) / prices.size(); //median
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			Conexao.close(conn, pstm, rs);
+		}
+		return medianPrice;
+	}
 
 }

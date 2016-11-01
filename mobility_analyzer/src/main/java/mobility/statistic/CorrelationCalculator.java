@@ -24,6 +24,7 @@ import mobility.core.SocioData;
 import mobility.core.Tweet;
 import mobility.core.User;
 import mobility.dbscan.GeoDistance;
+import mobility.service.ClusteredPointService;
 import mobility.service.SocioDataService;
 import mobility.service.UserService;
 import mobility.socioparser.ReadWriteExcelFile;
@@ -51,6 +52,8 @@ public class CorrelationCalculator {
 	private GeoCalculator geoCalculator = new GeoCalculator();
 	
 	private List<ClusteredUser> listClusteredUsers = new ArrayList<ClusteredUser>();
+	
+	private ClusteredPointService poiService = new ClusteredPointService();
 	
 	
 	
@@ -134,6 +137,7 @@ public class CorrelationCalculator {
 		List<Double> listDisplacementPerDayMedian = new ArrayList<Double>();
 		List<Double> listDistanceDisplacementMedian = new ArrayList<Double>();
 		
+		
 		ArrayList<ArrayList<String>> matrixY = new ArrayList<ArrayList<String>>();
 		ArrayList<ArrayList<String>> columnMatrix = new ArrayList<ArrayList<String>>();
 		matrixY.add(matrixSocialData.get(0));
@@ -175,6 +179,7 @@ public class CorrelationCalculator {
 		List<Integer> listDisplacement = new ArrayList<Integer>();
 		List<Double> listDisplacementPerDayMedian = new ArrayList<Double>();
 		List<Double> listDistanceDisplacementMedian = new ArrayList<Double>();
+		List<Double> listMedianPrices = new ArrayList<Double>();
 		
 		ArrayList<ArrayList<String>> matrixY = new ArrayList<ArrayList<String>>();
 		ArrayList<ArrayList<String>> columnMatrix = new ArrayList<ArrayList<String>>();
@@ -203,6 +208,7 @@ public class CorrelationCalculator {
 					listDisplacement.add(user.getDisplacement().getDisplacementCounter());
 					listDisplacementPerDayMedian.add(user.getDisplacement().getDisplacementPerDayMedian());
 					listDistanceDisplacementMedian.add(user.getDisplacement().getDistanceDisplacementMedian());
+					listMedianPrices.add(poiService.findMedianPriceByUserID(user.getUser_id()));
 					fillSocialDataMatrixByActivityCenter(matrixY, clusteredPoints);
 				}
 				
@@ -213,9 +219,9 @@ public class CorrelationCalculator {
 		System.out.println(matrixY.size());
 		columnMatrix = createColimnMatrix(matrixY);
 		fillColumnLabelsTest("Total Distance", columnMatrix);
-		RealMatrix realMatrix = calculateMultiCorrelationsFormatedTest(listRadius, listTotalMovement,
+		RealMatrix realMatrix = calculateMultiCorrelationsFormatedTestActivitiesCenters(listRadius, listTotalMovement,
 				listNumberOfMessages, listDisplacement, listDisplacementPerDayMedian,
-				listDistanceDisplacementMedian,columnMatrix, method, outPutFileName);
+				listDistanceDisplacementMedian, listMedianPrices, columnMatrix, method, outPutFileName);
 		saveMultiCorrelationsToXLS(realMatrix, outPutFileName);
 		
 	}
@@ -413,6 +419,7 @@ public class CorrelationCalculator {
 		columnsLabels.add("Number_of_displacements");
 		columnsLabels.add("Desplacement_per_day_median");
 		columnsLabels.add("Distance_displacement_median");
+		columnsLabels.add("Median_Prices");
 		for(ArrayList<String> list : columnMatrix){
 			columnsLabels.add(list.get(0));
 		}
@@ -473,6 +480,76 @@ public class CorrelationCalculator {
 			for(int j = 0; j < columnMatrix.get(i).size(); j++){
 				matrix[j][i+6] = Double.valueOf(columnMatrix.get(i).get(j));
 				values += matrix[j][i+6] + System.lineSeparator();
+			}
+			values += "---" + System.lineSeparator();
+			
+		}
+		writeOnFile(values, outPutFileName);
+		RealMatrix realMatrix = calclateMultiCorrelations(matrix, method);
+		return realMatrix;
+	}
+	
+	private RealMatrix calculateMultiCorrelationsFormatedTestActivitiesCenters(List<Double> listRadius, List<Double> listTotalMovement,
+			List<Integer> listNumberOfMessages, List<Integer> listDisplacement, List<Double> listDisplacementPerDayMedian,
+			List<Double> listDistanceDisplacementMedian, List<Double> listMedianPrices, ArrayList<ArrayList<String>> columnMatrix, String method,
+			String outPutFileName) {
+		double[][] matrix = new double[listRadius.size()][columnMatrix.size() + 7];
+		String values = "RADIUS" + System.lineSeparator();
+		
+		for (int i = 0; i < listRadius.size(); i++) {
+			matrix[i][0] = listRadius.get(i);
+			values += matrix[i][0] + System.lineSeparator();
+
+		}
+		values += "LIST TOTAL MOVEMENT" + System.lineSeparator();
+		for (int i = 0; i < listTotalMovement.size(); i++) {
+			matrix[i][1] = listTotalMovement.get(i);
+			values += matrix[i][1] + System.lineSeparator();
+
+		}
+		values += "NUMBER OF MESSAGES" + System.lineSeparator();
+		for (int i = 0; i < listNumberOfMessages.size(); i++) {
+			matrix[i][2] = listNumberOfMessages.get(i);
+			values += matrix[i][2] + System.lineSeparator();
+
+		}
+		values += "NUMBER OF DISPLACEMENTS" + System.lineSeparator();
+		for (int i = 0; i < listDisplacement.size(); i++) {
+			matrix[i][3] = listDisplacement.get(i);
+			values += matrix[i][3] + System.lineSeparator();
+
+		}
+		values += "DISPLACEMENTS PER DAY MEDIAN" + System.lineSeparator();
+		for (int i = 0; i < listDisplacementPerDayMedian.size(); i++) {
+			matrix[i][4] = listDisplacementPerDayMedian.get(i);
+			values += matrix[i][4] + System.lineSeparator();
+
+		}
+		values += "DISTANCE DISPLACEMENT MEDIAN" + System.lineSeparator();
+		for (int i = 0; i < listDistanceDisplacementMedian.size(); i++) {
+			matrix[i][5] = listDistanceDisplacementMedian.get(i);
+			values += matrix[i][5] + System.lineSeparator();
+
+		}
+		
+		values += "MEDIAN PRICES" + System.lineSeparator();
+		for (int i = 0; i < listMedianPrices.size(); i++) {
+			matrix[i][6] = listMedianPrices.get(i);
+			values += matrix[i][6] + System.lineSeparator();
+
+		}
+		
+		values += "---" + System.lineSeparator();
+
+		values += "--------------HERE WE START THE SOCIAL VARIABLES--------------" + System.lineSeparator();
+		String valZ = null;
+		for(int i = 0; i < columnMatrix.size(); i++){
+			valZ = columnMatrix.get(i).remove(0);
+			values += valZ + System.lineSeparator();
+			
+			for(int j = 0; j < columnMatrix.get(i).size(); j++){
+				matrix[j][i+7] = Double.valueOf(columnMatrix.get(i).get(j));
+				values += matrix[j][i+7] + System.lineSeparator();
 			}
 			values += "---" + System.lineSeparator();
 			
@@ -994,17 +1071,17 @@ public class CorrelationCalculator {
 
 			
 //			A partir daqui ja foi executado!!!------------------------------
-			corr.findMuiltiCorrelationAll("spearman", "home", "MultiCorrelationAll_5500");
+//			corr.findMuiltiCorrelationAll("kendall", "home", "MultiCorrelationAll_5500");
 			
 //			System.out.println("Esta em 1000...");
-//			corr.findMuiltiCorrelationByActivitiesCenters("spearman", "home", "ActivitiesCentersMedians_1000");
+//			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home", "ActivitiesCentersMedians_1000");
 //			System.out.println("Esta em 2500...");
 //			removeUsersByNumOfMessages(2500);
-//			corr.findMuiltiCorrelationByActivitiesCenters("spearman", "home", "ActivitiesCentersMedians_2500");
+//			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home", "ActivitiesCentersMedians_2500");
 			
-//			System.out.println("Esta em 5500...");
+			System.out.println("Esta em 5500...");
 //			removeUsersByNumOfMessages(5500);
-//			corr.findMuiltiCorrelationByActivitiesCenters("spearman", "home", "ActivitiesCentersMedians_5500");
+			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home", "ActivitiesCentersMedians_5500");
 			
 		}
 

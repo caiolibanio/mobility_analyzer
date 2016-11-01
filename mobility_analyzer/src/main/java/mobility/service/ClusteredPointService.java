@@ -44,4 +44,8 @@ public class ClusteredPointService {
 		clusteredPointDAO.updateCentroidPOIName(id, poi);
 	}
 	
+	public Double findMedianPriceByUserID(Long user_id){
+		return clusteredPointDAO.findMedianPriceByUserID(user_id);
+	}
+	
 }
