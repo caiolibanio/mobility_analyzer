@@ -586,7 +586,7 @@ public class CorrelationCalculator {
 		columnMatrix = createColimnMatrix(matrixY);
 		fillColumnLabels("Total Distance", columnMatrix);
 		RealMatrix realMatrix = calculateMultiCorrelationsFormated(listX, columnMatrix, method);
-		saveMultiCorrelationsToXLS(realMatrix, "TotalDistanceByWeekend");
+		saveMultiCorrelationsToXLS(realMatrix, "TotalDistanceByWeekend_5500");
 		
 	}
 	
@@ -1061,7 +1061,7 @@ public class CorrelationCalculator {
 		public static void main (String args[]){
 			CorrelationCalculator corr = new CorrelationCalculator();
 			corr.initData();
-//			corr.findMuiltiCorrelationTotalDistanceByWeekend("kendall", "home");
+			corr.findMuiltiCorrelationTotalDistanceByWeekend("kendall", "home");
 //			corr.findMuiltiCorrelationRadiusByWeekend("kendall", "home");
 //			corr.findMuiltiCorrelationNumMessagesByWeekend("kendall", "home");
 //			
@@ -1079,9 +1079,9 @@ public class CorrelationCalculator {
 //			removeUsersByNumOfMessages(2500);
 //			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home", "ActivitiesCentersMedians_2500");
 			
-			System.out.println("Esta em 5500...");
+//			System.out.println("Esta em 5500...");
 //			removeUsersByNumOfMessages(5500);
-			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home", "ActivitiesCentersMedians_5500");
+//			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home", "ActivitiesCentersMedians_5500");
 			
 		}
 
