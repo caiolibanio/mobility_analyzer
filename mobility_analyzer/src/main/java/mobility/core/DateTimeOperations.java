@@ -25,6 +25,45 @@ public class DateTimeOperations {
 		
 	}
 	
+	public static boolean isWeekdays(Tweet tweet){
+		Timestamp time = tweet.getDate();
+		Calendar londonTime = getLondonTime(time);
+		
+		int dayWeekLondon = londonTime.get(Calendar.DAY_OF_WEEK);
+		int hourLondon = londonTime.get(Calendar.HOUR_OF_DAY);
+		
+		int minutes = londonTime.get(Calendar.MINUTE);
+		int dayOfMonth = londonTime.get(Calendar.DAY_OF_MONTH);
+		int year = londonTime.get(Calendar.YEAR);
+
+		if((dayWeekLondon >= 2 && dayWeekLondon <= 6) && hourLondon < 17) {
+			
+			return true;
+			
+		}
+		return false;
+	}
+	
+	public static boolean isBankHoliday(Tweet tweet, int dayHoliday, int monthHoliday, int yearHoliday){
+		Timestamp time = tweet.getDate();
+		Calendar londonTime = getLondonTime(time);
+		
+		int dayWeekLondon = londonTime.get(Calendar.DAY_OF_WEEK);
+		int hourLondon = londonTime.get(Calendar.HOUR_OF_DAY);
+		
+		int minutes = londonTime.get(Calendar.MINUTE);
+		int dayOfMonth = londonTime.get(Calendar.DAY_OF_MONTH);
+		int monthTweet = londonTime.get(Calendar.MONTH);
+		int yearTweet = londonTime.get(Calendar.YEAR);
+
+		if(dayOfMonth == dayHoliday && (monthTweet + 1) == monthHoliday && yearTweet == yearHoliday) {
+			
+			return true;
+			
+		}
+		return false;
+	}
+	
 	public static Calendar getLondonTime(Timestamp time){
 		Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
 		int year = time.getYear() + 1900;

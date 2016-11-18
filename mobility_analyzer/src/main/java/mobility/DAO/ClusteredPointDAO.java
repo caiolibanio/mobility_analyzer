@@ -275,6 +275,7 @@ public class ClusteredPointDAO implements IDAO<ClusteredPoint> {
 				prices.add(rs.getInt("price"));
 			}
 			medianPrice = ((double) prices.stream().mapToInt(Integer::intValue).sum()) / prices.size(); //median
+			medianPrice = (double) Math.round(medianPrice);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
