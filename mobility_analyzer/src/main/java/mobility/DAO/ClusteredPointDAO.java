@@ -147,11 +147,11 @@ public class ClusteredPointDAO implements IDAO<ClusteredPoint> {
 		Connection conn = Conexao.open();
 		PreparedStatement pstm = null;
 		ResultSet rs = null;
-//		String sql = "SELECT id, user_id, ST_AsText(message_point) AS centroidPoint, cluster_number, poi_description"
-//				+ " FROM clustered_centroids WHERE id > 2342 ORDER BY id"; 
+		String sql = "SELECT id, user_id, ST_AsText(message_point) AS centroidPoint, cluster_number, poi_description, price"
+				+ " FROM clustered_centroids WHERE id > 3962 ORDER BY id"; 
 
-		String sql = "SELECT id, user_id, ST_AsText(message_point) AS centroidPoint, cluster_number, poi_description"
-				+ " FROM clustered_centroids ORDER BY id"; //Este eh o correto!!!
+//		String sql = "SELECT id, user_id, ST_AsText(message_point) AS centroidPoint, cluster_number, poi_description, price"
+//				+ " FROM clustered_centroids ORDER BY id"; //Este eh o correto!!!
 
 		List<ClusteredCentroid> clusteredCentroidList = new ArrayList<ClusteredCentroid>();
 		ClusteredCentroid clusteredCentroid = null;
@@ -163,6 +163,7 @@ public class ClusteredPointDAO implements IDAO<ClusteredPoint> {
 						Util.textToPoint(rs.getString("centroidPoint")), rs.getInt("cluster_number"));
 				clusteredCentroid.setPoiDescription(rs.getString("poi_description"));
 				clusteredCentroid.setId(rs.getLong("id"));
+				clusteredCentroid.setPrice(rs.getInt("price"));
 				clusteredCentroidList.add(clusteredCentroid);
 			}
 		} catch (SQLException e) {
@@ -274,7 +275,7 @@ public class ClusteredPointDAO implements IDAO<ClusteredPoint> {
 			while (rs.next()) {
 				prices.add(rs.getInt("price"));
 			}
-			medianPrice = ((double) prices.stream().mapToInt(Integer::intValue).sum()) / prices.size(); //median
+			medianPrice = ((double) prices.stream().mapToInt(Integer::intValue).sum()) / prices.size(); //avarege
 			medianPrice = (double) Math.round(medianPrice);
 		} catch (SQLException e) {
 			e.printStackTrace();

@@ -12,7 +12,9 @@ import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-
+import org.apache.poi.hssf.util.HSSFColor;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -167,6 +169,11 @@ public static void writeXLSFileTableCorrelations(ArrayList<ArrayList<String>> ma
 
 		HSSFWorkbook wb = new HSSFWorkbook();
 		HSSFSheet sheet = wb.createSheet(sheetName) ;
+		
+		CellStyle style1 = wb.createCellStyle();
+        Font font1 = wb.createFont();
+        font1.setColor(HSSFColor.BLUE.index);
+        style1.setFont(font1);
 
 		//iterating r number of rows
 		for (int r=0;r < matrixCells.size(); r++ )
@@ -179,6 +186,13 @@ public static void writeXLSFileTableCorrelations(ArrayList<ArrayList<String>> ma
 				HSSFCell cell = row.createCell(c);
 				
 				cell.setCellValue(matrixCells.get(r).get(c));
+				
+				if(c > 0 && r > 0){
+					Double val = Double.parseDouble(matrixCells.get(r).get(c));
+					if((val >= 0.25 || val <= -0.25) && val != 1.0){
+						cell.setCellStyle(style1);
+					}
+				}
 			}
 		}
 		
