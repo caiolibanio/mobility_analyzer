@@ -16,6 +16,7 @@ import mobility.core.Displacement;
 import mobility.core.Point;
 import mobility.core.Tweet;
 import mobility.core.User;
+import mobility.statistic.ClusteredHome;
 import mobility.util.Util;
 
 public class ClusteredPointDAO implements IDAO<ClusteredPoint> {
@@ -148,7 +149,7 @@ public class ClusteredPointDAO implements IDAO<ClusteredPoint> {
 		PreparedStatement pstm = null;
 		ResultSet rs = null;
 		String sql = "SELECT id, user_id, ST_AsText(message_point) AS centroidPoint, cluster_number, poi_description, price"
-				+ " FROM clustered_centroids WHERE id > 3962 ORDER BY id"; 
+				+ " FROM clustered_centroids WHERE id > 7950 ORDER BY id"; 
 
 //		String sql = "SELECT id, user_id, ST_AsText(message_point) AS centroidPoint, cluster_number, poi_description, price"
 //				+ " FROM clustered_centroids ORDER BY id"; //Este eh o correto!!!
@@ -285,4 +286,71 @@ public class ClusteredPointDAO implements IDAO<ClusteredPoint> {
 		return medianPrice;
 	}
 
+	public void saveClusteredPointHomes(List<ClusteredPoint> listClusteredHomes) {
+		Connection conn = Conexao.open();
+		PreparedStatement pstm = null;
+        String sql = "INSERT INTO clustered_points_home (user_id, message_point, cluster_number) "
+        		+ "VALUES (?, ST_SetSRID(ST_MakePoint(?" + ", " + "?), 4326), ?)";
+        try {
+        	conn.setAutoCommit(false);
+			pstm = conn.prepareStatement(sql);
+			for (ClusteredPoint entidade : listClusteredHomes) {
+				pstm.setLong(1, entidade.getUser_id());
+				pstm.setDouble(2, entidade.getPointMessage().getLongitude());
+				pstm.setDouble(3, entidade.getPointMessage().getLatitude());
+				pstm.setLong(4, entidade.getClusterNumber());
+				pstm.executeUpdate();
+			}
+			conn.commit();
+		} catch (SQLException e) {
+			if (conn != null) {
+				try {
+					System.err.print("Transaction is being rolled back");
+					e.printStackTrace();
+					conn.rollback();
+				} catch (SQLException excep) {
+					System.err.print("Transaction could not be rolled back");
+					excep.printStackTrace();
+				}
+			}
+		}finally {
+			Conexao.close(conn, pstm, null);
+		}
+		
+	}
+
+	public Point calculateHomeClusterCentroid(Long user_id) {
+		if(user_id.equals(new Long(149667567))){
+			System.out.println();
+		}
+		
+		Connection conn = Conexao.open();
+		PreparedStatement pstm = null;
+		ResultSet rs = null;
+		String sql = "SELECT calculate_home_centroid_clustered_points(?) AS centroid";
+//		 String sql = "select * from auxiliar order by user_id";
+		Point centroidPoint = null;
+		try {
+			pstm = conn.prepareStatement(sql);
+			pstm.setLong(1, user_id);
+			rs = pstm.executeQuery();
+			
+			if (rs.next()) {
+				String pointText = rs.getString("centroid");
+				if(pointText != null){
+					centroidPoint = Util.textToPoint(rs.getString("centroid"));
+				}else{
+					centroidPoint = new Point(0.0, 0.0);
+				}
+				
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			Conexao.close(conn, pstm, rs);
+		}
+		return centroidPoint;
+	}
 }
+
+

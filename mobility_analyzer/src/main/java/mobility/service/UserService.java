@@ -113,5 +113,9 @@ public class UserService {
 		return userDAO.findAllSelectedUsersWithoutMessages(numMessages);
 	}
 	
+	public void updateUserHomePoint(Long user_id, Point point){
+		userDAO.updateUserHomePoint(user_id, point);
+	}
+	
 
 }

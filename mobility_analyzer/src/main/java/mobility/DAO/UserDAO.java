@@ -2,6 +2,9 @@ package mobility.DAO;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import location.FoursquarePOI;
+
 import java.sql.*;
 
 import mobility.connection.Conexao;
@@ -334,11 +337,11 @@ public class UserDAO implements IDAO<User> {
 				user.setDisplacement(findDisplacementById(rs.getLong("displacement_id"), listDisplacement));
 				user.setNum_messages(rs.getInt("num_messages"));
 				user.setPointCentroid(Util.textToPoint(rs.getString("centroid")));
-				user.setPointHome(Util.textToPoint(rs.getString("home")));
+				user.setPointHome(Util.textToPoint(rs.getString("home")));  //eh p ficar descomentado!
 				user.setRadiusOfGyration(rs.getDouble("radius_of_gyration"));
 				user.setTweetList(tweetDAO.findTweetsByUser(user.getUser_id()));
 				user.setUser_movement(rs.getDouble("total_displacement"));
-				user.setHomePolygonCode(rs.getString("home_social_data_code"));
+				user.setHomePolygonCode(rs.getString("home_social_data_code")); //eh p ficar descomentado!!
 				user.setCentroidPolygonCode(rs.getString("centroid_social_data_code"));
 				userList.add(user);
 				System.out.println(++count);
@@ -407,7 +410,7 @@ public class UserDAO implements IDAO<User> {
 				user.setDisplacement(displacementService.findById(rs.getLong("displacement_id")));
 				user.setNum_messages(rs.getInt("num_messages"));
 				user.setPointCentroid(Util.textToPoint(rs.getString("centroid")));
-				user.setPointHome(Util.textToPoint(rs.getString("home")));
+				user.setPointHome(Util.textToPoint(rs.getString("home")));  
 				user.setRadiusOfGyration(rs.getDouble("radius_of_gyration"));
 				user.setTweetList(tweetDAO.findTweetsByUser(user.getUser_id()));
 				user.setUser_movement(rs.getDouble("total_displacement"));
@@ -421,6 +424,40 @@ public class UserDAO implements IDAO<User> {
 		}
 		return user;
 
+	}
+
+	public void updateUserHomePoint(Long user_id, Point point) {
+		if(user_id.equals(new Long(149667567))){
+			System.out.println();
+		}
+		
+		Connection conn = Conexao.open();
+		PreparedStatement pstm = null;
+        String sql = "UPDATE geo_tweets_users_selected SET geom_home_point = ST_SetSRID(ST_MakePoint(?" + ", " + "?), 4326) WHERE user_id = ?";
+        try {
+        	
+        	conn.setAutoCommit(false);
+			pstm = conn.prepareStatement(sql);
+			pstm.setDouble(1, point.getLongitude());
+			pstm.setDouble(2, point.getLatitude());
+			pstm.setLong(3, user_id);
+			pstm.executeUpdate();
+			conn.commit();
+		} catch (SQLException e) {
+			if (conn != null) {
+				try {
+					System.err.print("Transaction is being rolled back in ID: " + user_id);
+					e.printStackTrace();
+					conn.rollback();
+				} catch (SQLException excep) {
+					System.err.print("Transaction could not be rolled back in ID: " + user_id);
+					excep.printStackTrace();
+				}
+			}
+		}finally {
+			Conexao.close(conn, pstm, null);
+		}
+		
 	}
 
 }

@@ -72,7 +72,7 @@ public class CorrelationCalculator {
 		listUsers = new ArrayList<User>();
 		listSocioData = new ArrayList<SocioData>();
 		matrixSocialData = socioDataService.findAllMatrix();
-		listUsers.addAll(userService.findAllSelectedUsers(5500));
+		listUsers.addAll(userService.findAllSelectedUsers(5000));
 	}
 	
 	public void initDataToTest(ArrayList<ArrayList<String>> matrixSocialDataFromTest,
@@ -167,10 +167,10 @@ public class CorrelationCalculator {
 					fillSocialDataMatrixByCode(code, matrixY);
 				}else{
 					//filtro
-//					List<Tweet> listSelectedTweets = selectTweetsByAllBankHolidays(user); //53
+//					List<Tweet> listSelectedTweets = selectTweetsByAllBankHolidays(user); 
 //					List<Tweet> listSelectedTweets = selectTweetsOnWeekends(user); 
 //					List<Tweet> listSelectedTweets = selectTweetsOnWeekdays(user);
-					List<Tweet> listSelectedTweets = selectTweetsByAllBankHolidaysAndSundays(user);
+					List<Tweet> listSelectedTweets = selectTweetsByAllBankHolidaysAndSundays(user); 
 					//fim filtro
 					Double total_movement_dist = geoCalculator.generateDisplacementValue(listSelectedTweets);
 					
@@ -201,6 +201,7 @@ public class CorrelationCalculator {
 			}
 		}
 		
+		poiService.adjustAveragePrices(listMedianPrices);
 		System.out.println(matrixY.size());
 		columnMatrix = createColimnMatrix(matrixY);
 		fillColumnLabelsTest("Total Distance", columnMatrix);
@@ -225,6 +226,7 @@ public class CorrelationCalculator {
 		ArrayList<ArrayList<String>> matrixY = new ArrayList<ArrayList<String>>();
 		ArrayList<ArrayList<String>> columnMatrix = new ArrayList<ArrayList<String>>();
 		matrixY.add(matrixSocialData.get(0));
+		List<Tweet> listSelectedTweets = new ArrayList<Tweet>();
 		
 		for(String label : columnsToIgnore){
 			matrixY.get(0).remove(label);   //remover labels ignorados
@@ -239,13 +241,21 @@ public class CorrelationCalculator {
 			
 			if(code != null){ //verificar ponto fora de londres
 				//filtro
-//				List<Tweet> listSelectedTweets = selectTweetsByAllBankHolidays(user); //31 users 51
-//				List<Tweet> listSelectedTweets = selectTweetsOnWeekends(user); //33 55
-//				List<Tweet> listSelectedTweets = selectTweetsOnWeekdays(user); //33 55
-				List<Tweet> listSelectedTweets = selectTweetsByAllBankHolidaysAndSundays(user); //33
+//				listSelectedTweets = selectTweetsByAllBankHolidays(user); 
+//				listSelectedTweets = selectTweetsOnWeekends(user); 
+//				listSelectedTweets = selectTweetsOnWeekdays(user); 
+				listSelectedTweets = selectTweetsByAllBankHolidaysAndSundays(user); 
 				//fim filtro
 				
-				List<DoublePoint> clusteredPoints = findClusteredPoints(listSelectedTweets); 
+				List<DoublePoint> clusteredPoints = null;
+				
+				if(recalculating){
+					clusteredPoints = findClusteredPoints(listSelectedTweets); 
+				}else{
+					clusteredPoints = findClusteredPoints(user.getTweetList()); 
+				}
+				
+				
 				System.out.println("Clusterizou: " + count);
 				++count;
 				if(clusteredPoints.size() > 0){
@@ -290,6 +300,7 @@ public class CorrelationCalculator {
 			}
 		}
 		
+		poiService.adjustAveragePrices(listMedianPrices);
 		System.out.println(matrixY.size());
 		columnMatrix = createColimnMatrix(matrixY);
 		fillColumnLabelsTest("Total Distance", columnMatrix);
@@ -395,18 +406,20 @@ public class CorrelationCalculator {
 		List<DoublePoint> points = formatPointsToClusterGeneral(listTweets);
 
 		List<Cluster<DoublePoint>> cluster = clusteringPoints(points);
-//		ClusteredUser clusteredUser = new ClusteredUser(cluster, user.getUser_id());
-//		listClusteredUsers.add(clusteredUser);
+
 
 		ArrayList<ArrayList<DoublePoint>> listOfClusters = returnClustersList(cluster);
 //		List<List<DoublePoint>> listOfClustersWithoutHome = removeHomeCluster(listOfClusters);
 		
 		for (ArrayList<DoublePoint> c : listOfClusters) {
-			for (DoublePoint p : c) {
-				if(!listOfPoints.contains(p)){
-					listOfPoints.add(p);
+			if(c.size() >= 3){
+				for (DoublePoint p : c) {
+					if(!listOfPoints.contains(p)){
+						listOfPoints.add(p);
+					}
 				}
 			}
+			
 		}
 		return listOfPoints;
 		
@@ -451,7 +464,7 @@ public class CorrelationCalculator {
 	}
 
 	private static List<Cluster<DoublePoint>> clusteringPoints(List<DoublePoint> points) {
-		DBSCANClusterer dbscan = new DBSCANClusterer(45.0, 4, new GeoDistance());
+		DBSCANClusterer dbscan = new DBSCANClusterer(40.0, 3, new GeoDistance());
 		List<Cluster<DoublePoint>> cluster = dbscan.cluster(points);
 		return cluster;
 	}
@@ -1558,7 +1571,7 @@ public class CorrelationCalculator {
 
 			
 //			A partir daqui ja foi executado!!!------------------------------
-//			corr.findMuiltiCorrelationAll("kendall", "home", "MultiCorrelationAll_5500_holidANDSund_recalc", true);
+			corr.findMuiltiCorrelationAll("kendall", "home", "MultiCorrelationAll_5000_holidays_sundays", true);
 			
 //			System.out.println("Esta em 1000...");
 //			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home", "ActivitiesCentersMedians_1000");
@@ -1568,7 +1581,7 @@ public class CorrelationCalculator {
 			
 //			System.out.println("Esta em 5500...");
 //			removeUsersByNumOfMessages(5500);
-			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home", "ActivitiesCentersMedians_5500_holiANDSunday_recalc", true);
+//			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home", "ActivitiesCentersMedians_5000_holidays_sundays", true);
 			
 			
 //			corr.findMuiltiCorrelationPOIPricesByHoliday("kendall", "home");
