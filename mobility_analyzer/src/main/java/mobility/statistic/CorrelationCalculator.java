@@ -134,7 +134,7 @@ public class CorrelationCalculator {
 		
 	}
 	
-	public void findMuiltiCorrelationAll(String method, String locationBased, String outputFileName, boolean recalculate){
+	public void findMuiltiCorrelationAll(String method, String locationBased, boolean recalculate, int filtroCode){
 		String code = null;
 		List<Double> listRadius = new ArrayList<Double>();
 		List<Double> listTotalMovement = new ArrayList<Double>();
@@ -148,6 +148,8 @@ public class CorrelationCalculator {
 		ArrayList<ArrayList<String>> matrixY = new ArrayList<ArrayList<String>>();
 		ArrayList<ArrayList<String>> columnMatrix = new ArrayList<ArrayList<String>>();
 		matrixY.add(matrixSocialData.get(0));
+		List<Tweet> listSelectedTweets = new ArrayList<Tweet>();
+		String outPutFileName = "";
 		for(User user : listUsers){
 			if(locationBased.equals("home")){
 				code = user.getHomePolygonCode();
@@ -155,7 +157,26 @@ public class CorrelationCalculator {
 				code = user.getCentroidPolygonCode();
 			}
 			
+			
 			if(code != null){ //verificar ponto fora de londres
+				
+				if(filtroCode == 1){
+					listSelectedTweets = selectTweetsByAllBankHolidays(user); 
+					outPutFileName = "MultiCorrelationAll_5000_holidays_OK";
+				}else if(filtroCode == 2){
+					listSelectedTweets = selectTweetsOnWeekends(user); 
+					outPutFileName = "MultiCorrelationAll_5000_Weekends_OK";
+				}else if(filtroCode == 3){
+					listSelectedTweets = selectTweetsOnWeekdays(user); 
+					outPutFileName = "MultiCorrelationAll_5000_Weekdays_OK";
+				}else if (filtroCode == 4){
+					listSelectedTweets = selectTweetsByAllBankHolidaysAndSundays(user); 
+					outPutFileName = "MultiCorrelationAll_5000_holidays_sundays_OK";
+				}else{
+					outPutFileName = "MultiCorrelationAll_5000_OK";
+				}
+				
+				
 				if(!recalculate){
 					listRadius.add(user.getRadiusOfGyration());
 					listTotalMovement.add(user.getUser_movement());
@@ -166,12 +187,7 @@ public class CorrelationCalculator {
 					listMedianPrices.add(poiService.findMedianPriceByUserID(user.getUser_id()));
 					fillSocialDataMatrixByCode(code, matrixY);
 				}else{
-					//filtro
-//					List<Tweet> listSelectedTweets = selectTweetsByAllBankHolidays(user); 
-//					List<Tweet> listSelectedTweets = selectTweetsOnWeekends(user); 
-//					List<Tweet> listSelectedTweets = selectTweetsOnWeekdays(user);
-					List<Tweet> listSelectedTweets = selectTweetsByAllBankHolidaysAndSundays(user); 
-					//fim filtro
+					
 					Double total_movement_dist = geoCalculator.generateDisplacementValue(listSelectedTweets);
 					
 					if(total_movement_dist > 0.0){
@@ -207,12 +223,12 @@ public class CorrelationCalculator {
 		fillColumnLabelsTest("Total Distance", columnMatrix);
 		RealMatrix realMatrix = calculateMultiCorrelationsWithPrice(listRadius, listTotalMovement,
 				listNumberOfMessages, listDisplacement, listDisplacementPerDayMedian,
-				listDistanceDisplacementMedian, listMedianPrices, columnMatrix, method, outputFileName);
-		saveMultiCorrelationsToXLS(realMatrix, outputFileName);
+				listDistanceDisplacementMedian, listMedianPrices, columnMatrix, method, outPutFileName);
+		saveMultiCorrelationsToXLS(realMatrix, outPutFileName);
 		
 	}
 	
-	public void findMuiltiCorrelationByActivitiesCenters(String method, String locationBased, String outPutFileName, boolean recalculating){
+	public void findMuiltiCorrelationByActivitiesCenters(String method, String locationBased, boolean recalculating, int filtroCode){
 		String code = null;
 		List<Double> listRadius = new ArrayList<Double>();
 		List<Double> listTotalMovement = new ArrayList<Double>();
@@ -227,6 +243,7 @@ public class CorrelationCalculator {
 		ArrayList<ArrayList<String>> columnMatrix = new ArrayList<ArrayList<String>>();
 		matrixY.add(matrixSocialData.get(0));
 		List<Tweet> listSelectedTweets = new ArrayList<Tweet>();
+		String outPutFileName = "";
 		
 		for(String label : columnsToIgnore){
 			matrixY.get(0).remove(label);   //remover labels ignorados
@@ -240,11 +257,27 @@ public class CorrelationCalculator {
 			}
 			
 			if(code != null){ //verificar ponto fora de londres
+				
+				if(filtroCode == 1){
+					listSelectedTweets = selectTweetsByAllBankHolidays(user); 
+					outPutFileName = "ActivitiesCentersMedians_5000_holidays_OK";
+				}else if(filtroCode == 2){
+					listSelectedTweets = selectTweetsOnWeekends(user); 
+					outPutFileName = "ActivitiesCentersMedians_5000_Weekends_OK";
+				}else if(filtroCode == 3){
+					listSelectedTweets = selectTweetsOnWeekdays(user); 
+					outPutFileName = "ActivitiesCentersMedians_5000_Weekdays_OK";
+				}else if (filtroCode == 4){
+					listSelectedTweets = selectTweetsByAllBankHolidaysAndSundays(user); 
+					outPutFileName = "ActivitiesCentersMedians_5000_holidays_sundays_OK";
+				}else{
+					outPutFileName = "ActivitiesCentersMedians_5000_OK";
+				}
+				
 				//filtro
-//				listSelectedTweets = selectTweetsByAllBankHolidays(user); 
-//				listSelectedTweets = selectTweetsOnWeekends(user); 
-//				listSelectedTweets = selectTweetsOnWeekdays(user); 
-				listSelectedTweets = selectTweetsByAllBankHolidaysAndSundays(user); 
+
+//				
+				
 				//fim filtro
 				
 				List<DoublePoint> clusteredPoints = null;
@@ -645,7 +678,23 @@ public class CorrelationCalculator {
 		return realMatrix;
 	}
 
-	public void findMuiltiCorrelationTotalDistanceByWeekend(String method, String locationBased){
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	public void findMuiltiCorrelationPOIPrices(String method, String locationBased, String fileName, boolean recalculate){
 		String code = null;
 		List<Double> listX = new ArrayList<Double>();
 		ArrayList<ArrayList<String>> matrixY = new ArrayList<ArrayList<String>>();
@@ -660,270 +709,42 @@ public class CorrelationCalculator {
 			}
 			
 			if(code != null){ //verificar ponto fora de londres
-				listDifferentRegions.add(code);
-				List<Tweet> selectedTweets = selectTweetsOnWeekends(user);
-				listX.add(geoCalculator.generateDisplacementValue(selectedTweets));
-				fillSocialDataMatrixByCode(code, matrixY);
+				if(!recalculate){
+					
+					listX.add(poiService.findMedianPriceByUserID(user.getUser_id()));
+					fillSocialDataMatrixByCode(code, matrixY);
+				}else{
+					//filtro
+//					List<Tweet> listSelectedTweets = selectTweetsByAllBankHolidays(user); 
+//					List<Tweet> listSelectedTweets = selectTweetsOnWeekends(user); 
+//					List<Tweet> listSelectedTweets = selectTweetsOnWeekdays(user);
+					List<Tweet> listSelectedTweets = selectTweetsByAllBankHolidaysAndSundays(user); 
+					//fim filtro
+					Double total_movement_dist = geoCalculator.generateDisplacementValue(listSelectedTweets);
+					
+					if(total_movement_dist > 0.0){
+						
+						List<ClusteredPoint> listclusteredPoints = poiService.findAll();
+						List<ClusteredCentroid> listPOIs = poiService.findAllCentroids();
+						
+						listX.add(calculateAvaragePrice(listSelectedTweets, listclusteredPoints, listPOIs));
+						fillSocialDataMatrixByCode(code, matrixY);
+					}
+					
+					
+				}
+
 			}
 		}
 		
-		System.out.println(matrixY.size());
-		System.out.println("Num of regions: " + listDifferentRegions.size());
-		columnMatrix = createColimnMatrix(matrixY);
-		fillColumnLabels("Total Distance", columnMatrix);
-		RealMatrix realMatrix = calculateMultiCorrelationsFormated(listX, columnMatrix, method);
-		saveMultiCorrelationsToXLS(realMatrix, "TotalDistanceByWeekend_5500");
-		
-	}
-	
-	public void findMuiltiCorrelationRadiusByWeekend(String method, String locationBased){
-		String code = null;
-		List<Double> listX = new ArrayList<Double>();
-		ArrayList<ArrayList<String>> matrixY = new ArrayList<ArrayList<String>>();
-		ArrayList<ArrayList<String>> columnMatrix = new ArrayList<ArrayList<String>>();
-		Set<String> listDifferentRegions = new HashSet<String>();
-		matrixY.add(matrixSocialData.get(0));
-		for(User user : listUsers){
-			if(locationBased.equals("home")){
-				code = user.getHomePolygonCode();
-			}else{
-				code = user.getCentroidPolygonCode();
-			}
-			
-			if(code != null){ //verificar ponto fora de londres
-				listDifferentRegions.add(code);
-				List<Tweet> selectedTweets = selectTweetsOnWeekends(user);
-				listX.add(geoCalculator.calculateRadiusOfGyration(geoCalculator.tweetsAsPoints(selectedTweets)));
-				fillSocialDataMatrixByCode(code, matrixY);
-			}
-		}
-		
-		System.out.println(matrixY.size());
-		System.out.println("Num of regions: " + listDifferentRegions.size());
-		columnMatrix = createColimnMatrix(matrixY);
-		fillColumnLabels("Radius_of_gyration_weekend", columnMatrix);
-		RealMatrix realMatrix = calculateMultiCorrelationsFormated(listX, columnMatrix, method);
-		saveMultiCorrelationsToXLS(realMatrix, "RadiusByWeekend_5500");
-		
-	}
-	
-	public void findMuiltiCorrelationNumMessagesByWeekend(String method, String locationBased){
-		String code = null;
-		List<Double> listX = new ArrayList<Double>();
-		ArrayList<ArrayList<String>> matrixY = new ArrayList<ArrayList<String>>();
-		ArrayList<ArrayList<String>> columnMatrix = new ArrayList<ArrayList<String>>();
-		Set<String> listDifferentRegions = new HashSet<String>();
-		matrixY.add(matrixSocialData.get(0));
-		for(User user : listUsers){
-			if(locationBased.equals("home")){
-				code = user.getHomePolygonCode();
-			}else{
-				code = user.getCentroidPolygonCode();
-			}
-			
-			if(code != null){ //verificar ponto fora de londres
-				listDifferentRegions.add(code);
-				List<Tweet> selectedTweets = selectTweetsOnWeekends(user);
-				listX.add((double) selectedTweets.size());
-				fillSocialDataMatrixByCode(code, matrixY);
-			}
-		}
-		
-		System.out.println(matrixY.size());
-		System.out.println("Num of regions: " + listDifferentRegions.size());
-		columnMatrix = createColimnMatrix(matrixY);
-		fillColumnLabels("Num_messages_weekend", columnMatrix);
-		RealMatrix realMatrix = calculateMultiCorrelationsFormated(listX, columnMatrix, method);
-		saveMultiCorrelationsToXLS(realMatrix, "NumMessagesByWeekend_5500");
-		
-	}
-	
-	public void findMuiltiCorrelationTotalDistanceByWeekdays(String method, String locationBased){
-		String code = null;
-		List<Double> listX = new ArrayList<Double>();
-		ArrayList<ArrayList<String>> matrixY = new ArrayList<ArrayList<String>>();
-		ArrayList<ArrayList<String>> columnMatrix = new ArrayList<ArrayList<String>>();
-		matrixY.add(matrixSocialData.get(0));
-		for(User user : listUsers){
-			if(locationBased.equals("home")){
-				code = user.getHomePolygonCode();
-			}else{
-				code = user.getCentroidPolygonCode();
-			}
-			
-			if(code != null){ //verificar ponto fora de londres
-				List<Tweet> listSelectedTweets = selectTweetsOnWeekdays(user);
-				listX.add(geoCalculator.generateDisplacementValue(listSelectedTweets));
-				fillSocialDataMatrixByCode(code, matrixY);
-			}
-		}
-		
-		System.out.println(matrixY.size());
-		columnMatrix = createColimnMatrix(matrixY);
-		fillColumnLabels("Total Distance", columnMatrix);
-		RealMatrix realMatrix = calculateMultiCorrelationsFormated(listX, columnMatrix, method);
-		saveMultiCorrelationsToXLS(realMatrix, "TotalDistanceByWeekdays_5500");
-		
-	}
-	
-	public void findMuiltiCorrelationRadiusByWeekdays(String method, String locationBased){
-		String code = null;
-		List<Double> listX = new ArrayList<Double>();
-		ArrayList<ArrayList<String>> matrixY = new ArrayList<ArrayList<String>>();
-		ArrayList<ArrayList<String>> columnMatrix = new ArrayList<ArrayList<String>>();
-		Set<String> listDifferentRegions = new HashSet<String>();
-		matrixY.add(matrixSocialData.get(0));
-		for(User user : listUsers){
-			if(locationBased.equals("home")){
-				code = user.getHomePolygonCode();
-			}else{
-				code = user.getCentroidPolygonCode();
-			}
-			
-			if(code != null){ //verificar ponto fora de londres
-				listDifferentRegions.add(code);
-				List<Tweet> selectedTweets = selectTweetsOnWeekdays(user);
-				listX.add(geoCalculator.calculateRadiusOfGyration(geoCalculator.tweetsAsPoints(selectedTweets)));
-				fillSocialDataMatrixByCode(code, matrixY);
-			}
-		}
-		
-		System.out.println(matrixY.size());
-		System.out.println("Num of regions: " + listDifferentRegions.size());
-		columnMatrix = createColimnMatrix(matrixY);
-		fillColumnLabels("Radius_of_gyration", columnMatrix);
-		RealMatrix realMatrix = calculateMultiCorrelationsFormated(listX, columnMatrix, method);
-		saveMultiCorrelationsToXLS(realMatrix, "RadiusByWeekdays_5500");
-		
-	}
-	
-	public void findMuiltiCorrelationNumMessagesByWeekdays(String method, String locationBased){
-		String code = null;
-		List<Double> listX = new ArrayList<Double>();
-		ArrayList<ArrayList<String>> matrixY = new ArrayList<ArrayList<String>>();
-		ArrayList<ArrayList<String>> columnMatrix = new ArrayList<ArrayList<String>>();
-		Set<String> listDifferentRegions = new HashSet<String>();
-		matrixY.add(matrixSocialData.get(0));
-		for(User user : listUsers){
-			if(locationBased.equals("home")){
-				code = user.getHomePolygonCode();
-			}else{
-				code = user.getCentroidPolygonCode();
-			}
-			
-			if(code != null){ //verificar ponto fora de londres
-				listDifferentRegions.add(code);
-				List<Tweet> selectedTweets = selectTweetsOnWeekdays(user);
-				listX.add((double) selectedTweets.size());
-				fillSocialDataMatrixByCode(code, matrixY);
-			}
-		}
-		
-		System.out.println(matrixY.size());
-		System.out.println("Num of regions: " + listDifferentRegions.size());
-		columnMatrix = createColimnMatrix(matrixY);
-		fillColumnLabels("Num_messages", columnMatrix);
-		RealMatrix realMatrix = calculateMultiCorrelationsFormated(listX, columnMatrix, method);
-		saveMultiCorrelationsToXLS(realMatrix, "NumMessagesByWeekdays_5500");
-		
-	}
-	
-	public void findMuiltiCorrelationNumMessagesByHoliday(String method, String locationBased){
-		String code = null;
-		List<Double> listX = new ArrayList<Double>();
-		ArrayList<ArrayList<String>> matrixY = new ArrayList<ArrayList<String>>();
-		ArrayList<ArrayList<String>> columnMatrix = new ArrayList<ArrayList<String>>();
-		Set<String> listDifferentRegions = new HashSet<String>();
-		matrixY.add(matrixSocialData.get(0));
-		for(User user : listUsers){
-			if(locationBased.equals("home")){
-				code = user.getHomePolygonCode();
-			}else{
-				code = user.getCentroidPolygonCode();
-			}
-			
-			if(code != null){ //verificar ponto fora de londres
-				listDifferentRegions.add(code);
-				List<Tweet> selectedTweets = selectTweetsByAllBankHolidays(user);
-				listX.add((double) selectedTweets.size());
-				fillSocialDataMatrixByCode(code, matrixY);
-			}
-		}
-		
-		System.out.println(matrixY.size());
-		System.out.println("Num of regions: " + listDifferentRegions.size());
-		columnMatrix = createColimnMatrix(matrixY);
-		fillColumnLabels("Num_messages", columnMatrix);
-		RealMatrix realMatrix = calculateMultiCorrelationsFormated(listX, columnMatrix, method);
-		saveMultiCorrelationsToXLS(realMatrix, "NumMessagesByAllHoliday-5500");
-		
-	}
-	
-	public void findMuiltiCorrelationRadiusByHoliday(String method, String locationBased){
-		String code = null;
-		List<Double> listX = new ArrayList<Double>();
-		ArrayList<ArrayList<String>> matrixY = new ArrayList<ArrayList<String>>();
-		ArrayList<ArrayList<String>> columnMatrix = new ArrayList<ArrayList<String>>();
-		Set<String> listDifferentRegions = new HashSet<String>();
-		matrixY.add(matrixSocialData.get(0));
-		for(User user : listUsers){
-			if(locationBased.equals("home")){
-				code = user.getHomePolygonCode();
-			}else{
-				code = user.getCentroidPolygonCode();
-			}
-			
-			if(code != null){ //verificar ponto fora de londres
-				listDifferentRegions.add(code);
-				List<Tweet> selectedTweets = selectTweetsByAllBankHolidays(user);
-				listX.add(geoCalculator.calculateRadiusOfGyration(geoCalculator.tweetsAsPoints(selectedTweets)));
-				fillSocialDataMatrixByCode(code, matrixY);
-			}
-		}
-		
-		System.out.println(matrixY.size());
-		System.out.println("Num of regions: " + listDifferentRegions.size());
-		columnMatrix = createColimnMatrix(matrixY);
-		fillColumnLabels("Radius_of_gyration", columnMatrix);
-		RealMatrix realMatrix = calculateMultiCorrelationsFormated(listX, columnMatrix, method);
-		saveMultiCorrelationsToXLS(realMatrix, "RadiusByAllHoliday-5500");
-		
-	}
-	
-	public void findMuiltiCorrelationPOIPricesByHoliday(String method, String locationBased){
-		String code = null;
-		List<Double> listX = new ArrayList<Double>();
-		ArrayList<ArrayList<String>> matrixY = new ArrayList<ArrayList<String>>();
-		ArrayList<ArrayList<String>> columnMatrix = new ArrayList<ArrayList<String>>();
-		Set<String> listDifferentRegions = new HashSet<String>();
-		matrixY.add(matrixSocialData.get(0));
-		List<ClusteredPoint> listclusteredPoints = poiService.findAll();
-		List<ClusteredCentroid> listPOIs = poiService.findAllCentroids();
-		for(User user : listUsers){
-			if(locationBased.equals("home")){
-				code = user.getHomePolygonCode();
-			}else{
-				code = user.getCentroidPolygonCode();
-			}
-			
-			if(code != null){ //verificar ponto fora de londres
-				listDifferentRegions.add(code);
-				List<Tweet> selectedTweets = selectTweetsByAllBankHolidays(user);
-				
-				
-				Double avaregePrice = calculateAvaragePrice(selectedTweets, listclusteredPoints, listPOIs);
-				
-				listX.add(avaregePrice);
-				fillSocialDataMatrixByCode(code, matrixY);
-			}
-		}
+		poiService.adjustAveragePrices(listX);
 		
 		System.out.println(matrixY.size());
 		System.out.println("Num of regions: " + listDifferentRegions.size());
 		columnMatrix = createColimnMatrix(matrixY);
 		fillColumnLabels("Avarage_prices", columnMatrix);
-		RealMatrix realMatrix = calculateMultiCorrelationsFormated(listX, columnMatrix, method);
-		saveMultiCorrelationsToXLS(realMatrix, "PricesByAllHoliday-5500");
+		RealMatrix realMatrix = calculateMultiCorrelationsFormated(listX, columnMatrix, method, fileName);
+		saveMultiCorrelationsToXLS(realMatrix, fileName);
 		
 	}
 	
@@ -961,33 +782,7 @@ public class CorrelationCalculator {
 		
 	}
 
-	public void findMuiltiCorrelationTotalDistanceByHoliday(String method, String locationBased){
-		String code = null;
-		List<Double> listX = new ArrayList<Double>();
-		ArrayList<ArrayList<String>> matrixY = new ArrayList<ArrayList<String>>();
-		ArrayList<ArrayList<String>> columnMatrix = new ArrayList<ArrayList<String>>();
-		matrixY.add(matrixSocialData.get(0));
-		for(User user : listUsers){
-			if(locationBased.equals("home")){
-				code = user.getHomePolygonCode();
-			}else{
-				code = user.getCentroidPolygonCode();
-			}
-			
-			if(code != null){ //verificar ponto fora de londres
-				List<Tweet> listSelectedTweets = selectTweetsByAllBankHolidays(user);
-				listX.add(geoCalculator.generateDisplacementValue(listSelectedTweets));
-				fillSocialDataMatrixByCode(code, matrixY);
-			}
-		}
-		
-		System.out.println(matrixY.size());
-		columnMatrix = createColimnMatrix(matrixY);
-		fillColumnLabels("Total Distance", columnMatrix);
-		RealMatrix realMatrix = calculateMultiCorrelationsFormated(listX, columnMatrix, method);
-		saveMultiCorrelationsToXLS(realMatrix, "TotalDistanceByAllHoliday-5500");
-		
-	}
+	
 	
 	private List<Tweet> selectTweetsByHoliday(User user, int day, int month, int year) {
 		List<Tweet> list = new ArrayList<Tweet>();
@@ -1044,144 +839,6 @@ public class CorrelationCalculator {
 		return list;
 		
 	}
-
-	public void findMuiltiCorrelationTotalDistance(String method, String locationBased){
-		String code = null;
-		List<Double> listX = new ArrayList<Double>();
-		ArrayList<ArrayList<String>> matrixY = new ArrayList<ArrayList<String>>();
-		ArrayList<ArrayList<String>> columnMatrix = new ArrayList<ArrayList<String>>();
-		List<String> listAnsw = new ArrayList<String>();
-		matrixY.add(matrixSocialData.get(0));
-		for(User user : listUsers){
-			if(locationBased.equals("home")){
-				code = user.getHomePolygonCode();
-			}else{
-				code = user.getCentroidPolygonCode();
-			}
-			if(code != null){ //verificar ponto fora de londres
-				listX.add(user.getUser_movement());
-				fillSocialDataMatrixByCode(code, matrixY);
-			}
-			
-		}
-		
-		System.out.println(matrixY.size());
-		columnMatrix = createColimnMatrix(matrixY);
-		fillColumnLabels("Total Distance", columnMatrix);
-		RealMatrix realMatrix = calculateMultiCorrelationsFormated(listX, columnMatrix, method);
-		saveMultiCorrelationsToXLS(realMatrix, "TotalDistance");
-	}
-	
-	public void findMuiltiCorrelationRadius(String method, String locationBased){
-		String code = null;
-		List<Double> listX = new ArrayList<Double>();
-		ArrayList<ArrayList<String>> matrixY = new ArrayList<ArrayList<String>>();
-		ArrayList<ArrayList<String>> columnMatrix = new ArrayList<ArrayList<String>>();
-		List<String> listAnsw = new ArrayList<String>();
-		matrixY.add(matrixSocialData.get(0));
-		for(User user : listUsers){
-			if(locationBased.equals("home")){
-				code = user.getHomePolygonCode();
-			}else{
-				code = user.getCentroidPolygonCode();
-			}
-			if(code != null){ //verificar ponto fora de londres
-				listX.add(user.getRadiusOfGyration());
-				fillSocialDataMatrixByCode(code, matrixY);
-			}
-			
-		}
-		
-		System.out.println(matrixY.size());
-		columnMatrix = createColimnMatrix(matrixY);
-		fillColumnLabels("Radius_of_gyration", columnMatrix);
-		RealMatrix realMatrix = calculateMultiCorrelationsFormated(listX, columnMatrix, method);
-		saveMultiCorrelationsToXLS(realMatrix, "Radius");
-	}
-	
-	public void findMuiltiCorrelationNumMessages(String method, String locationBased){
-		String code = null;
-		List<Double> listX = new ArrayList<Double>();
-		ArrayList<ArrayList<String>> matrixY = new ArrayList<ArrayList<String>>();
-		ArrayList<ArrayList<String>> columnMatrix = new ArrayList<ArrayList<String>>();
-		List<String> listAnsw = new ArrayList<String>();
-		matrixY.add(matrixSocialData.get(0));
-		for(User user : listUsers){
-			if(locationBased.equals("home")){
-				code = user.getHomePolygonCode();
-			}else{
-				code = user.getCentroidPolygonCode();
-			}
-			if(code != null){ //verificar ponto fora de londres
-				listX.add((double)user.getNum_messages());
-				fillSocialDataMatrixByCode(code, matrixY);
-			}
-			
-		}
-		
-		System.out.println(matrixY.size());
-		columnMatrix = createColimnMatrix(matrixY);
-		fillColumnLabels("Number_of_messages", columnMatrix);
-		RealMatrix realMatrix = calculateMultiCorrelationsFormated(listX, columnMatrix, method);
-		saveMultiCorrelationsToXLS(realMatrix, "NumMessages");
-	}
-	
-	public void findMuiltiCorrelationDisplacementsPerDay(String method, String locationBased){
-		String code = null;
-		List<Double> listX = new ArrayList<Double>();
-		ArrayList<ArrayList<String>> matrixY = new ArrayList<ArrayList<String>>();
-		ArrayList<ArrayList<String>> columnMatrix = new ArrayList<ArrayList<String>>();
-		List<String> listAnsw = new ArrayList<String>();
-		matrixY.add(matrixSocialData.get(0));
-		for(User user : listUsers){
-			if(locationBased.equals("home")){
-				code = user.getHomePolygonCode();
-			}else{
-				code = user.getCentroidPolygonCode();
-			}
-			if(code != null){ //verificar ponto fora de londres
-				listX.add((double)user.getDisplacement().getDisplacementPerDayMedian());
-				fillSocialDataMatrixByCode(code, matrixY);
-			}
-			
-		}
-		
-		System.out.println(matrixY.size());
-		columnMatrix = createColimnMatrix(matrixY);
-		fillColumnLabels("Displacement_per_day", columnMatrix);
-		RealMatrix realMatrix = calculateMultiCorrelationsFormated(listX, columnMatrix, method);
-		saveMultiCorrelationsToXLS(realMatrix, "DisplacementsPerDay");
-	}
-	
-	public void findMuiltiCorrelationNumberOfDisplacements(String method, String locationBased){
-		String code = null;
-		List<Double> listX = new ArrayList<Double>();
-		ArrayList<ArrayList<String>> matrixY = new ArrayList<ArrayList<String>>();
-		ArrayList<ArrayList<String>> columnMatrix = new ArrayList<ArrayList<String>>();
-		matrixY.add(matrixSocialData.get(0));
-		for(User user : listUsers){
-			if(locationBased.equals("home")){
-				code = user.getHomePolygonCode();
-			}else{
-				code = user.getCentroidPolygonCode();
-			}
-			
-			String c1 = user.getHomePolygonCode();
-			String c2 = user.getCentroidPolygonCode();
-			
-			if(c1 != null && c2 != null){ //verificar ponto fora de londres
-				listX.add((double)user.getDisplacement().getDisplacementCounter());
-				fillSocialDataMatrixByCode(c1, matrixY);
-			}
-			
-		}
-		
-		System.out.println(matrixY.size());
-		columnMatrix = createColimnMatrix(matrixY);
-		fillColumnLabels("Number_of_Displacements", columnMatrix);
-		RealMatrix realMatrix = calculateMultiCorrelationsFormated(listX, columnMatrix, method);
-		saveMultiCorrelationsToXLS(realMatrix, "NumberOfDisplacements");
-	}
 	
 	private void fillColumnLabels(String mobilityLabel, ArrayList<ArrayList<String>> columnMatrix) {
 		columnsLabels.add(mobilityLabel);
@@ -1192,7 +849,7 @@ public class CorrelationCalculator {
 	}
 
 	private RealMatrix calculateMultiCorrelationsFormated(List<Double> listX,
-			ArrayList<ArrayList<String>> columnMatrix, String method) {
+			ArrayList<ArrayList<String>> columnMatrix, String method, String fileName) {
 		double[][] matrix = new double[listX.size()][columnMatrix.size() + 1];
 		String values = "mobility_variable" + System.lineSeparator();
 		
@@ -1217,7 +874,7 @@ public class CorrelationCalculator {
 			values += "---" + System.lineSeparator();
 			
 		}
-//		writeOnFile(values);
+		writeOnFile(values, fileName);
 		RealMatrix realMatrix = calclateMultiCorrelations(matrix, method);
 		return realMatrix;
 		
@@ -1337,117 +994,6 @@ public class CorrelationCalculator {
 		exportCorrelationResultMatrixToXLS(matrixFormated, fileName);
 	}
 	
-	public void findMuiltiCorrelationDisplacementByHoliday(String method, String locationBased){
-		String code = null;
-		List<Double> listX = new ArrayList<Double>();
-		ArrayList<ArrayList<String>> matrixY = new ArrayList<ArrayList<String>>();
-		ArrayList<ArrayList<String>> columnMatrix = new ArrayList<ArrayList<String>>();
-		Set<String> listDifferentRegions = new HashSet<String>();
-		matrixY.add(matrixSocialData.get(0));
-		List<ClusteredPoint> listclusteredPoints = poiService.findAll();
-		List<ClusteredCentroid> listPOIs = poiService.findAllCentroids();
-		for(User user : listUsers){
-			if(locationBased.equals("home")){
-				code = user.getHomePolygonCode();
-			}else{
-				code = user.getCentroidPolygonCode();
-			}
-			
-			if(code != null){ //verificar ponto fora de londres
-				listDifferentRegions.add(code);
-				List<Tweet> selectedTweets = selectTweetsByAllBankHolidays(user);
-				user.setTweetList(selectedTweets);
-				calculateTotalDisplacement(user);
-				
-				listX.add((double)user.getDisplacement().getDisplacementCounter());
-				fillSocialDataMatrixByCode(code, matrixY);
-			}
-		}
-		
-		System.out.println(matrixY.size());
-		System.out.println("Num of regions: " + listDifferentRegions.size());
-		columnMatrix = createColimnMatrix(matrixY);
-		fillColumnLabels("Total_Displacement", columnMatrix);
-		RealMatrix realMatrix = calculateMultiCorrelationsFormated(listX, columnMatrix, method);
-		saveMultiCorrelationsToXLS(realMatrix, "Total_Displacement_holiday-5500");
-		
-	}
-	
-	public void findMuiltiCorrelationDisplacementPerDayMedianByHoliday(String method, String locationBased){
-		String code = null;
-		List<Double> listX = new ArrayList<Double>();
-		ArrayList<ArrayList<String>> matrixY = new ArrayList<ArrayList<String>>();
-		ArrayList<ArrayList<String>> columnMatrix = new ArrayList<ArrayList<String>>();
-		Set<String> listDifferentRegions = new HashSet<String>();
-		matrixY.add(matrixSocialData.get(0));
-		List<ClusteredPoint> listclusteredPoints = poiService.findAll();
-		List<ClusteredCentroid> listPOIs = poiService.findAllCentroids();
-		for(User user : listUsers){
-			if(locationBased.equals("home")){
-				code = user.getHomePolygonCode();
-			}else{
-				code = user.getCentroidPolygonCode();
-			}
-			
-			if(code != null){ //verificar ponto fora de londres
-				listDifferentRegions.add(code);
-				List<Tweet> selectedTweets = selectTweetsByAllBankHolidays(user);
-				user.setTweetList(selectedTweets);
-				calculateTotalDisplacement(user);
-				calculateDisplacementPerDay(user);
-				user.getDisplacement().calculateDisplacementPerDayMedian();
-				
-				listX.add((double)user.getDisplacement().getDisplacementPerDayMedian());
-				fillSocialDataMatrixByCode(code, matrixY);
-			}
-		}
-		
-		System.out.println(matrixY.size());
-		System.out.println("Num of regions: " + listDifferentRegions.size());
-		columnMatrix = createColimnMatrix(matrixY);
-		fillColumnLabels("Displacement_perDay_median", columnMatrix);
-		RealMatrix realMatrix = calculateMultiCorrelationsFormated(listX, columnMatrix, method);
-		saveMultiCorrelationsToXLS(realMatrix, "Displacement_perDay_median_holiday-5500");
-		
-	}
-	
-	public void findMuiltiCorrelationDistanceDisplacementMedianByHoliday(String method, String locationBased){
-		String code = null;
-		List<Double> listX = new ArrayList<Double>();
-		ArrayList<ArrayList<String>> matrixY = new ArrayList<ArrayList<String>>();
-		ArrayList<ArrayList<String>> columnMatrix = new ArrayList<ArrayList<String>>();
-		Set<String> listDifferentRegions = new HashSet<String>();
-		matrixY.add(matrixSocialData.get(0));
-		List<ClusteredPoint> listclusteredPoints = poiService.findAll();
-		List<ClusteredCentroid> listPOIs = poiService.findAllCentroids();
-		for(User user : listUsers){
-			if(locationBased.equals("home")){
-				code = user.getHomePolygonCode();
-			}else{
-				code = user.getCentroidPolygonCode();
-			}
-			
-			if(code != null){ //verificar ponto fora de londres
-				listDifferentRegions.add(code);
-				List<Tweet> selectedTweets = selectTweetsByAllBankHolidays(user);
-				user.setTweetList(selectedTweets);
-				calculateTotalDisplacement(user);
-				calculateDistancePerDisplacement(user);
-				user.getDisplacement().calculateDistanceDisplacementMedian();
-				
-				listX.add((double)user.getDisplacement().getDisplacementPerDayMedian());
-				fillSocialDataMatrixByCode(code, matrixY);
-			}
-		}
-		
-		System.out.println(matrixY.size());
-		System.out.println("Num of regions: " + listDifferentRegions.size());
-		columnMatrix = createColimnMatrix(matrixY);
-		fillColumnLabels("Distance_Displacement_median", columnMatrix);
-		RealMatrix realMatrix = calculateMultiCorrelationsFormated(listX, columnMatrix, method);
-		saveMultiCorrelationsToXLS(realMatrix, "Distance_Displacement_median_holiday-5500");
-		
-	}
 	
 	private void calculateDistancePerDisplacement(User u) {
 
@@ -1570,18 +1116,61 @@ public class CorrelationCalculator {
 			
 
 			
-//			A partir daqui ja foi executado!!!------------------------------
-			corr.findMuiltiCorrelationAll("kendall", "home", "MultiCorrelationAll_5000_holidays_sundays", true);
+//			HOME-------
+			corr.findMuiltiCorrelationAll("kendall", "home", false, 0);
+			corr = null;
 			
-//			System.out.println("Esta em 1000...");
-//			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home", "ActivitiesCentersMedians_1000");
-//			System.out.println("Esta em 2500...");
-//			removeUsersByNumOfMessages(2500);
-//			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home", "ActivitiesCentersMedians_2500");
+			CorrelationCalculator corr1 = new CorrelationCalculator();
+			corr1.initData();
+			corr1.findMuiltiCorrelationAll("kendall", "home", true, 1);
+			corr1 = null;
 			
-//			System.out.println("Esta em 5500...");
-//			removeUsersByNumOfMessages(5500);
-//			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home", "ActivitiesCentersMedians_5000_holidays_sundays", true);
+			CorrelationCalculator corr2 = new CorrelationCalculator();
+			corr2.initData();
+			corr2.findMuiltiCorrelationAll("kendall", "home", true, 2);
+			corr2 = null;
+			
+			CorrelationCalculator corr3 = new CorrelationCalculator();
+			corr3.initData();
+			corr3.findMuiltiCorrelationAll("kendall", "home", true, 3);
+			corr3 = null;
+			
+			CorrelationCalculator corr4 = new CorrelationCalculator();
+			corr4.initData();
+			corr4.findMuiltiCorrelationAll("kendall", "home", true, 4);
+			corr4 = null;
+			
+			
+//			FIM HOME ------------
+			
+			
+			//AC-------
+//			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home", false, 0);
+//			corr = null;
+//			
+//			CorrelationCalculator corr1 = new CorrelationCalculator();
+//			corr1.initData();
+//			corr1.findMuiltiCorrelationByActivitiesCenters("kendall", "home", true, 1);
+//			corr1 = null;
+//			
+//			CorrelationCalculator corr2 = new CorrelationCalculator();
+//			corr2.initData();
+//			corr2.findMuiltiCorrelationByActivitiesCenters("kendall", "home", true, 2);
+//			corr2 = null;
+//			
+//			CorrelationCalculator corr3 = new CorrelationCalculator();
+//			corr3.initData();
+//			corr3.findMuiltiCorrelationByActivitiesCenters("kendall", "home", true, 3);
+//			corr3 = null;
+//			
+//			CorrelationCalculator corr4 = new CorrelationCalculator();
+//			corr4.initData();
+//			corr4.findMuiltiCorrelationByActivitiesCenters("kendall", "home", true, 4);
+			
+			
+			
+			//AC------fim-----
+			
 			
 			
 //			corr.findMuiltiCorrelationPOIPricesByHoliday("kendall", "home");

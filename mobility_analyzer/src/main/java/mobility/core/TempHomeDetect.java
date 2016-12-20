@@ -38,7 +38,7 @@ public class TempHomeDetect {
 		listUsers = new ArrayList<User>();
 //		listUsers.add(userService.findUserById(new Long(14493067)));
 //		listUsers.add(userService.findUserById(new Long(2659)));
-		listUsers.addAll(userService.findAllSelectedUsers(4500));
+		listUsers.addAll(userService.findAllSelectedUsers(1000));
 
 		try {
 			calculating();

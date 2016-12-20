@@ -148,11 +148,10 @@ public class ClusteredPointDAO implements IDAO<ClusteredPoint> {
 		Connection conn = Conexao.open();
 		PreparedStatement pstm = null;
 		ResultSet rs = null;
-		String sql = "SELECT id, user_id, ST_AsText(message_point) AS centroidPoint, cluster_number, poi_description, price"
-				+ " FROM clustered_centroids WHERE id > 7950 ORDER BY id"; 
-
 //		String sql = "SELECT id, user_id, ST_AsText(message_point) AS centroidPoint, cluster_number, poi_description, price"
-//				+ " FROM clustered_centroids ORDER BY id"; //Este eh o correto!!!
+//				+ " FROM clustered_centroids WHERE id > 10077 ORDER BY id"; 
+		String sql = "SELECT id, user_id, ST_AsText(message_point) AS centroidPoint, cluster_number, poi_description, price"
+				+ " FROM clustered_centroids ORDER BY id"; //Este eh o correto!!!
 
 		List<ClusteredCentroid> clusteredCentroidList = new ArrayList<ClusteredCentroid>();
 		ClusteredCentroid clusteredCentroid = null;

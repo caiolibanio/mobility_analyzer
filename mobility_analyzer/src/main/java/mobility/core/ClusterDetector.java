@@ -35,7 +35,7 @@ public class ClusterDetector {
 		listUsers = new ArrayList<User>();
 //		listUsers.add(userService.findUserById(new Long(14493067)));
 //		listUsers.add(userService.findUserById(new Long(20094532)));
-		listUsers.addAll(userService.findAllSelectedUsers(4500));
+		listUsers.addAll(userService.findAllSelectedUsers(1000));
 
 		try {
 			calculating();

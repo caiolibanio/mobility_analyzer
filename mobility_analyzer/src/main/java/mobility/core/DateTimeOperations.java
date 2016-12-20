@@ -98,7 +98,7 @@ public class DateTimeOperations {
 			return true;
 		}else if(isBankHoliday(tweet, 25, 12, 2014)){//Christmas Day
 			return true;
-		}else if(isBankHoliday(tweet, 28, 12, 2014)){ // Boxing Day (substitute day)
+		}else if(isBankHoliday(tweet, 26, 12, 2014)){ // Boxing Day (substitute day)
 			return true;
 		}else{
 			return false;
