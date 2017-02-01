@@ -25,7 +25,7 @@ public class DateTimeOperations {
 		
 	}
 	
-	public static boolean isWeekdays(Tweet tweet){
+	public static boolean isWorkdays(Tweet tweet){
 		Timestamp time = tweet.getDate();
 		Calendar londonTime = getLondonTime(time);
 		
@@ -36,7 +36,26 @@ public class DateTimeOperations {
 		int dayOfMonth = londonTime.get(Calendar.DAY_OF_MONTH);
 		int year = londonTime.get(Calendar.YEAR);
 
-		if((dayWeekLondon >= 2 && dayWeekLondon <= 6) && hourLondon < 17) {
+		if((dayWeekLondon >= 2 && dayWeekLondon <= 6) && !isBankHoliday2015(tweet)) {
+			
+			return true;
+			
+		}
+		return false;
+	}
+	
+	public static boolean isWeekend(Tweet tweet){
+		Timestamp time = tweet.getDate();
+		Calendar londonTime = getLondonTime(time);
+		
+		int dayWeekLondon = londonTime.get(Calendar.DAY_OF_WEEK);
+		int hourLondon = londonTime.get(Calendar.HOUR_OF_DAY);
+		
+		int minutes = londonTime.get(Calendar.MINUTE);
+		int dayOfMonth = londonTime.get(Calendar.DAY_OF_MONTH);
+		int year = londonTime.get(Calendar.YEAR);
+
+		if((dayWeekLondon == 7 || dayWeekLondon == 1) && !isBankHoliday2015(tweet)) {
 			
 			return true;
 			

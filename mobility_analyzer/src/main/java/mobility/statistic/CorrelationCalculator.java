@@ -167,8 +167,8 @@ public class CorrelationCalculator {
 					listSelectedTweets = selectTweetsOnWeekends(user); 
 					outPutFileName = "MultiCorrelationAll_5000_Weekends_OK";
 				}else if(filtroCode == 3){
-					listSelectedTweets = selectTweetsOnWeekdays(user); 
-					outPutFileName = "MultiCorrelationAll_5000_Weekdays_OK";
+					listSelectedTweets = selectTweetsOnWorkdays(user); 
+					outPutFileName = "MultiCorrelationAll_5000_Workdays_OK";
 				}else if (filtroCode == 4){
 					listSelectedTweets = selectTweetsByAllBankHolidaysAndSundays(user); 
 					outPutFileName = "MultiCorrelationAll_5000_holidays_sundays_OK";
@@ -265,8 +265,8 @@ public class CorrelationCalculator {
 					listSelectedTweets = selectTweetsOnWeekends(user); 
 					outPutFileName = "ActivitiesCentersMedians_5000_Weekends_OK";
 				}else if(filtroCode == 3){
-					listSelectedTweets = selectTweetsOnWeekdays(user); 
-					outPutFileName = "ActivitiesCentersMedians_5000_Weekdays_OK";
+					listSelectedTweets = selectTweetsOnWorkdays(user); 
+					outPutFileName = "ActivitiesCentersMedians_5000_Workdays_OK";
 				}else if (filtroCode == 4){
 					listSelectedTweets = selectTweetsByAllBankHolidaysAndSundays(user); 
 					outPutFileName = "ActivitiesCentersMedians_5000_holidays_sundays_OK";
@@ -820,7 +820,7 @@ public class CorrelationCalculator {
 	private List<Tweet> selectTweetsOnWeekends(User user) {
 		List<Tweet> list = new ArrayList<Tweet>();
 		for(Tweet t : user.getTweetList()){
-			if(!DateTimeOperations.isWeekdays(t)){
+			if(DateTimeOperations.isWeekend(t)){
 				list.add(t);
 			}
 		}
@@ -829,10 +829,10 @@ public class CorrelationCalculator {
 		
 	}
 	
-	private List<Tweet> selectTweetsOnWeekdays(User user) {
+	private List<Tweet> selectTweetsOnWorkdays(User user) {
 		List<Tweet> list = new ArrayList<Tweet>();
 		for(Tweet t : user.getTweetList()){
-			if(DateTimeOperations.isWeekdays(t)){
+			if(DateTimeOperations.isWorkdays(t)){
 				list.add(t);
 			}
 		}
@@ -1089,8 +1089,9 @@ public class CorrelationCalculator {
 	
 	public static class Teste{
 		public static void main (String args[]){
-			CorrelationCalculator corr = new CorrelationCalculator();
-			corr.initData();
+//			CorrelationCalculator corr = new CorrelationCalculator();
+//			corr.initData();
+			
 //			corr.findMuiltiCorrelationTotalDistanceByWeekend("kendall", "home");
 //			corr.findMuiltiCorrelationRadiusByWeekend("kendall", "home");
 //			corr.findMuiltiCorrelationNumMessagesByWeekend("kendall", "home");
@@ -1117,14 +1118,16 @@ public class CorrelationCalculator {
 
 			
 //			HOME-------
+			CorrelationCalculator corr = new CorrelationCalculator();
+			corr.initData();
 			corr.findMuiltiCorrelationAll("kendall", "home", false, 0);
 			corr = null;
-			
+//			
 			CorrelationCalculator corr1 = new CorrelationCalculator();
 			corr1.initData();
 			corr1.findMuiltiCorrelationAll("kendall", "home", true, 1);
 			corr1 = null;
-			
+//			
 			CorrelationCalculator corr2 = new CorrelationCalculator();
 			corr2.initData();
 			corr2.findMuiltiCorrelationAll("kendall", "home", true, 2);
@@ -1145,27 +1148,29 @@ public class CorrelationCalculator {
 			
 			
 			//AC-------
-//			corr.findMuiltiCorrelationByActivitiesCenters("kendall", "home", false, 0);
-//			corr = null;
+			CorrelationCalculator corrAC = new CorrelationCalculator();
+			corrAC.initData();
+			corrAC.findMuiltiCorrelationByActivitiesCenters("kendall", "home", false, 0);
+			corrAC = null;
 //			
-//			CorrelationCalculator corr1 = new CorrelationCalculator();
-//			corr1.initData();
-//			corr1.findMuiltiCorrelationByActivitiesCenters("kendall", "home", true, 1);
-//			corr1 = null;
+			CorrelationCalculator corr1AC = new CorrelationCalculator();
+			corr1AC.initData();
+			corr1AC.findMuiltiCorrelationByActivitiesCenters("kendall", "home", true, 1);
+			corr1AC = null;
 //			
-//			CorrelationCalculator corr2 = new CorrelationCalculator();
-//			corr2.initData();
-//			corr2.findMuiltiCorrelationByActivitiesCenters("kendall", "home", true, 2);
-//			corr2 = null;
+			CorrelationCalculator corr2AC = new CorrelationCalculator();
+			corr2AC.initData();
+			corr2AC.findMuiltiCorrelationByActivitiesCenters("kendall", "home", true, 2);
+			corr2AC = null;
 //			
-//			CorrelationCalculator corr3 = new CorrelationCalculator();
-//			corr3.initData();
-//			corr3.findMuiltiCorrelationByActivitiesCenters("kendall", "home", true, 3);
-//			corr3 = null;
+			CorrelationCalculator corr3AC = new CorrelationCalculator();
+			corr3AC.initData();
+			corr3AC.findMuiltiCorrelationByActivitiesCenters("kendall", "home", true, 3);
+			corr3AC = null;
 //			
-//			CorrelationCalculator corr4 = new CorrelationCalculator();
-//			corr4.initData();
-//			corr4.findMuiltiCorrelationByActivitiesCenters("kendall", "home", true, 4);
+			CorrelationCalculator corr4AC = new CorrelationCalculator();
+			corr4AC.initData();
+			corr4AC.findMuiltiCorrelationByActivitiesCenters("kendall", "home", true, 4);
 			
 			
 			

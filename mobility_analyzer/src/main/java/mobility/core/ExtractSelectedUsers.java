@@ -117,7 +117,7 @@ public class ExtractSelectedUsers {
 	private static void findHomePoint(List<User> users) {
 		for (User u : users) {
 			List<DoublePoint> points = formatPointsToCluster(u);
-			List<Cluster<DoublePoint>> cluster = clusteringPoints(points);
+			List<Cluster<DoublePoint>> cluster = clusteringPoints(40.0, 4, points);
 			if (cluster.size() > 0) {
 				Point home = findingHome(cluster);
 				u.setPointHome(home);
@@ -166,10 +166,16 @@ public class ExtractSelectedUsers {
 		return listOfClusters.get(index);
 	}
 
-	private static List<Cluster<DoublePoint>> clusteringPoints(List<DoublePoint> points) {
-		DBSCANClusterer dbscan = new DBSCANClusterer(45.0, 4, new GeoDistance());
+	private static List<Cluster<DoublePoint>> clusteringPoints(double radius, int minPts, List<DoublePoint> points) {
+		DBSCANClusterer dbscan = new DBSCANClusterer(radius, minPts, new GeoDistance());
 		List<Cluster<DoublePoint>> cluster = dbscan.cluster(points);
-		return cluster;
+		List<Cluster<DoublePoint>> realClusters = new ArrayList<Cluster<DoublePoint>>();
+		for(Cluster<DoublePoint> c : cluster){
+			if(c.getPoints().size() >= minPts){
+				realClusters.add(c);
+			}
+		}
+		return realClusters;
 	}
 
 	private static List<DoublePoint> formatPointsToCluster(User user) {
@@ -321,7 +327,7 @@ public class ExtractSelectedUsers {
 		for (User u : users) {
 			for (Tweet t : u.getTweetList()) {
 				if (calc.calculateDistance(u.getPointCentroid().getLatitude(), u.getPointCentroid().getLongitude(),
-						t.getLatitude(), t.getLongitude()) >= 45.0) {
+						t.getLatitude(), t.getLongitude()) >= 40.0) {
 					toAdd.add(u);
 					break;
 				}

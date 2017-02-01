@@ -14,7 +14,14 @@ public class GeoCalculator {
 	
 	public GeoCalculator(){}
 	
-	public Double[] calculateMidPoint(List<Point> listPoints){
+	public Double[] calculateMidPoint(List<Point> listPoint){
+		List<Point> copyListPoint = new ArrayList<Point>();
+		
+		for(Point p : listPoint){
+			Point newPoint = new Point(p.getLatitude(), p.getLongitude());
+			copyListPoint.add(newPoint);
+		}
+		
 		
 		Double totalWeight = 0.;
 		Double combinedX = 0.;
@@ -26,7 +33,7 @@ public class GeoCalculator {
 		Double[] coordsOut = new Double[2];
 		
 		//convert decimal degrees to radians
-		for(Point p : listPoints){
+		for(Point p : copyListPoint){
 			p.setLatitude(p.getLatitude() * (Math.PI / 180));
 			p.setLongitude(p.getLongitude() * (Math.PI / 180));
 			totalWeight += p.getWeight();
@@ -34,14 +41,14 @@ public class GeoCalculator {
 		}
 		
 		//Convert lat/long to cartesian (x,y,z) coordinates
-		for(Point p : listPoints){
+		for(Point p : copyListPoint){
 			p.setX(Math.cos(p.getLatitude()) * Math.cos(p.getLongitude()));
 			p.setY(Math.cos(p.getLatitude()) * Math.sin(p.getLongitude()));
 			p.setZ(Math.sin(p.getLatitude()));
 		}
 		
 		//Compute combined weighted cartesian coordinate
-		for(Point p : listPoints){
+		for(Point p : copyListPoint){
 			combinedX += p.getX() * p.getWeight();
 			combinedY += p.getY() * p.getWeight();
 			combinedZ += p.getZ() * p.getWeight();
