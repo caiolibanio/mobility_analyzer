@@ -149,7 +149,7 @@ public class ClusteredPointDAO implements IDAO<ClusteredPoint> {
 		PreparedStatement pstm = null;
 		ResultSet rs = null;
 //		String sql = "SELECT id, user_id, ST_AsText(message_point) AS centroidPoint, cluster_number, poi_description, price"
-//				+ " FROM clustered_centroids WHERE id > 10077 ORDER BY id"; 
+//				+ " FROM clustered_centroids WHERE id > 10804 ORDER BY id"; 
 		String sql = "SELECT id, user_id, ST_AsText(message_point) AS centroidPoint, cluster_number, poi_description, price"
 				+ " FROM clustered_centroids ORDER BY id"; //Este eh o correto!!!
 

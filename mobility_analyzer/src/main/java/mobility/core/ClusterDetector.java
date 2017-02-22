@@ -35,7 +35,7 @@ public class ClusterDetector {
 		listUsers = new ArrayList<User>();
 //		listUsers.add(userService.findUserById(new Long(14493067)));
 //		listUsers.add(userService.findUserById(new Long(20094532)));
-		listUsers.addAll(userService.findAllSelectedUsers(1000));
+		listUsers.addAll(userService.findAllSelectedUsers(5000));
 
 		try {
 			calculating();
@@ -81,7 +81,7 @@ public class ClusterDetector {
 			
 			for(Cluster<DoublePoint> cluster : clusteredUser.getCluster()){
 				
-				if(cluster.getPoints().size() >= 3){
+				if(cluster.getPoints().size() >= 2){
 					++countCluster;
 					for (DoublePoint p : cluster.getPoints()) {
 						double[] dPoint = p.getPoint();
@@ -138,7 +138,7 @@ public class ClusterDetector {
 	}
 
 	private static List<Cluster<DoublePoint>> clusteringPoints(List<DoublePoint> points) {
-		DBSCANClusterer dbscan = new DBSCANClusterer(40.0, 3, new GeoDistance());
+		DBSCANClusterer dbscan = new DBSCANClusterer(40.0, 2, new GeoDistance());
 		List<Cluster<DoublePoint>> cluster = dbscan.cluster(points);
 		return cluster;
 	}

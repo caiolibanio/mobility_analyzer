@@ -3,7 +3,9 @@ package mobility.core;
 import java.sql.SQLException;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import location.FoursquarePOI;
 import location.POIGrabber;
@@ -29,9 +31,10 @@ public class POIDetector {
 	}
 
 	private static void calculating() {
-		
-//		createClusteredCentroids();
-//		insertClusteredCentroids();
+		System.out.println("pre_processando...");
+		createClusteredCentroids();
+		insertClusteredCentroids();
+		System.out.println("deteccao de POI vai começar...");
 		//-------
 		List<ClusteredCentroid> listCentroidsFromDB = clusteredPointService.findAllCentroids();
 		if(listCentroidsFromDB.size() > 0){
@@ -45,12 +48,26 @@ public class POIDetector {
 		
 	}
 
-	private static void retrivePOIFromFoursquare(List<ClusteredCentroid> listCentroidsFromDB) throws Exception {
+	private static void retrivePOIFromFoursquare(List<ClusteredCentroid> listCentroidsFromDB) throws InterruptedException {
 		
 		for(ClusteredCentroid centroid : listCentroidsFromDB){
 			PointOfInterest closestPOI = null;
 			Double minDistance = null;
-			List<PointOfInterest> POIList = generatePOIListByRadius(centroid.getPointMessage(), 45);
+			List<PointOfInterest> POIList = new ArrayList<PointOfInterest>();
+			boolean retrievedPOI = false;
+			while(!retrievedPOI){
+				try {
+					POIList = generatePOIListByRadius(centroid.getPointMessage(), 40);
+					retrievedPOI = true;
+				} catch (Exception e) {
+					retrievedPOI = false;
+					Date date = new Date();
+					System.err.println("Aguardando 1h para prosseguir..." + date);
+					TimeUnit.MINUTES.sleep(61);
+				}
+			}
+			
+			
 			for(PointOfInterest poi : POIList){
 				Point centroidPoint = centroid.getPointMessage();
 				Double distance = calc.calculateDistance(centroidPoint.getLatitude(),

@@ -287,7 +287,7 @@ public class ExtractSelectedUsers {
 	}
 
 	private static boolean isDisplacement(Double lat1, Double lon1, Double lat2, Double lon2) {
-		if (calc.calculateDistance(lat1, lon1, lat2, lon2) > 45) {
+		if (calc.calculateDistance(lat1, lon1, lat2, lon2) >= 40) {
 			return true;
 		}
 		return false;
