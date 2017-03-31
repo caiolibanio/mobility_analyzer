@@ -25,8 +25,12 @@ public class ClusteredPointDAO implements IDAO<ClusteredPoint> {
 	public void saveClusteredPoints(List<ClusteredPoint> listPoints) {
 		Connection conn = Conexao.open();
 		PreparedStatement pstm = null;
-        String sql = "INSERT INTO clustered_points (user_id, message_point, cluster_number) "
-        		+ "VALUES (?, ST_SetSRID(ST_MakePoint(?" + ", " + "?), 4326), ?)";
+//        String sql = "INSERT INTO clustered_points (user_id, message_point, cluster_number) "
+//        		+ "VALUES (?, ST_SetSRID(ST_MakePoint(?" + ", " + "?), 4326), ?)"; //POI
+        
+        String sql = "INSERT INTO clustered_points_ac (user_id, message_point, cluster_number) "
+        		+ "VALUES (?, ST_SetSRID(ST_MakePoint(?" + ", " + "?), 4326), ?)"; //AC
+        
         try {
         	conn.setAutoCommit(false);
 			pstm = conn.prepareStatement(sql);
@@ -149,7 +153,7 @@ public class ClusteredPointDAO implements IDAO<ClusteredPoint> {
 		PreparedStatement pstm = null;
 		ResultSet rs = null;
 //		String sql = "SELECT id, user_id, ST_AsText(message_point) AS centroidPoint, cluster_number, poi_description, price"
-//				+ " FROM clustered_centroids WHERE id > 10804 ORDER BY id"; 
+//				+ " FROM clustered_centroids WHERE id > 250584 ORDER BY id"; 
 		String sql = "SELECT id, user_id, ST_AsText(message_point) AS centroidPoint, cluster_number, poi_description, price"
 				+ " FROM clustered_centroids ORDER BY id"; //Este eh o correto!!!
 

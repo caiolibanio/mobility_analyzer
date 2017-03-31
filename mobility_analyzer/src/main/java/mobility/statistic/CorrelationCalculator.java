@@ -72,7 +72,7 @@ public class CorrelationCalculator {
 		listUsers = new ArrayList<User>();
 		listSocioData = new ArrayList<SocioData>();
 		matrixSocialData = socioDataService.findAllMatrix();
-		listUsers.addAll(userService.findAllSelectedUsers(5000));
+		listUsers.addAll(userService.findAllSelectedUsers(2500));
 	}
 	
 	public void initDataToTest(ArrayList<ArrayList<String>> matrixSocialDataFromTest,
